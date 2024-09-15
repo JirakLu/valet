@@ -2,7 +2,12 @@
 
 namespace Valet;
 
+use DomainException;
 use GuzzleHttp\Client;
+use Illuminate\Container\Container;
+use Valet\Facades\PackageManager;
+use Valet\Facades\ServiceManager;
+use Valet\ServiceManagers\Systemd;
 
 class Valet
 {
@@ -135,5 +140,51 @@ You might also want to investigate your global Composer configs. Helpful command
 <comment>composer global outdated</comment> to identify outdated packages
 <comment>composer global diagnose</comment> to run diagnostics
             ';
+    }
+
+    /**
+     * Configure the environment for Valet
+     */
+    public function environmentSetup(): void
+    {
+        $this->packageManagerSetup();
+        $this->serviceManagerSetup();
+    }
+
+    /**
+     * Configure package manager
+     */
+    public function packageManagerSetup(): void
+    {
+        Container::getInstance()->bind(PackageManager::class, $this->getAvailablePackageManager());
+    }
+
+    /**
+     * Determine the users package manager
+     */
+    public function getAvailablePackageManager(): string
+    {
+    }
+
+    /**
+     * Configure service manager
+     */
+    public function serviceManagerSetup(): void
+    {
+        Container::getInstance()->bind(ServiceManager::class, $this->getAvailableServiceManager());
+    }
+
+    /**
+     * Determine the users service manager
+     */
+    public function getAvailableServiceManager(): string
+    {
+        return collect([
+            Systemd::class,
+        ])->first(static function ($pm) {
+            return resolve($pm)->isAvailable();
+        }, static function () {
+            throw new DomainException("No compatible service manager found.");
+        });
     }
 }

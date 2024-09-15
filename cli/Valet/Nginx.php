@@ -4,21 +4,29 @@ namespace Valet;
 
 use DomainException;
 use Illuminate\Support\Collection;
+use Valet\Facades\PackageManager;
+use Valet\Facades\ServiceManager;
 
 class Nginx
 {
-    const NGINX_CONF = BREW_PREFIX.'/etc/nginx/nginx.conf';
+    const string NGINX_CONF = '/etc/nginx/nginx.conf';
 
-    public function __construct(public Brew $brew, public CommandLine $cli, public Filesystem $files,
-        public Configuration $configuration, public Site $site) {}
+    public function __construct(
+        public PackageManager $pm,
+        public ServiceManager $sm,
+        public CommandLine $cli,
+        public Filesystem $files,
+        public Configuration $configuration,
+        public Site $site
+    ) {}
 
     /**
      * Install the configuration files for Nginx.
      */
     public function install(): void
     {
-        if (! $this->brew->hasInstalledNginx()) {
-            $this->brew->installOrFail('nginx', []);
+        if (! $this->pm->hasInstalledNginx()) {
+            $this->pm->installOrFail('nginx');
         }
 
         $this->installConfiguration();
@@ -46,10 +54,10 @@ class Nginx
      */
     public function installServer(): void
     {
-        $this->files->ensureDirExists(BREW_PREFIX.'/etc/nginx/valet');
+        $this->files->ensureDirExists('/etc/nginx/valet');
 
         $this->files->putAsUser(
-            BREW_PREFIX.'/etc/nginx/valet/valet.conf',
+            '/etc/nginx/valet/valet.conf',
             str_replace(
                 ['VALET_HOME_PATH', 'VALET_SERVER_PATH', 'VALET_STATIC_PREFIX'],
                 [VALET_HOME_PATH, VALET_SERVER_PATH, VALET_STATIC_PREFIX],
@@ -58,7 +66,7 @@ class Nginx
         );
 
         $this->files->putAsUser(
-            BREW_PREFIX.'/etc/nginx/fastcgi_params',
+            '/etc/nginx/fastcgi_params',
             $this->files->getStub('fastcgi_params')
         );
     }
@@ -118,7 +126,7 @@ class Nginx
     {
         $this->lint();
 
-        $this->brew->restartService($this->brew->nginxServiceName());
+        $this->sm->restartService(['nginx']);
     }
 
     /**
@@ -126,7 +134,7 @@ class Nginx
      */
     public function stop(): void
     {
-        $this->brew->stopService(['nginx']);
+        $this->sm->stopService(['nginx']);
     }
 
     /**
@@ -134,9 +142,9 @@ class Nginx
      */
     public function uninstall(): void
     {
-        $this->brew->stopService(['nginx', 'nginx-full']);
-        $this->brew->uninstallFormula('nginx nginx-full');
-        $this->cli->quietly('rm -rf '.BREW_PREFIX.'/etc/nginx '.BREW_PREFIX.'/var/log/nginx');
+        $this->sm->stopService(['nginx']);
+        $this->pm->uninstallFormula('nginx');
+        $this->cli->quietly('rm -rf /etc/nginx /var/log/nginx');
     }
 
     /**

@@ -53,6 +53,8 @@ $share_tools = [
     'ngrok',
 ];
 
+Valet::configureEnvironment();
+
 /**
  * Install Valet and any required services.
  */

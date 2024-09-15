@@ -50,7 +50,7 @@ then
     # Check for parameters to pass through to share tool (these will start with '-' or '--')
     PARAMS=(${@:2})
 
-    for PARAM in ${PARAMS[@]}
+    for PARAM in "${PARAMS[@]}"
     do
         if [[ ${PARAM:0:1} == '-' ]]; then
             PARAMS=("${PARAMS[@]/$PARAM}") # Quotes when working with strings
