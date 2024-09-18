@@ -643,7 +643,7 @@ class Site
     {
         info('Trusting Laravel Valet Certificate Authority...');
         $result = $this->cli->run(sprintf(
-            'sudo cp "%s" /usr/local/share/ca-certificates && sudo update-ca-certificates',
+            'sudo cp "%s" /usr/share/ca-certificates/trust-source/anchors/ && sudo update-ca-trust',
             $caPemPath
         ));
         if ($result) {
@@ -657,7 +657,7 @@ class Site
     public function trustCertificate(string $crtPath): void
     {
         $this->cli->run(sprintf(
-            'sudo cp "%s" /usr/local/share/ca-certificates && sudo update-ca-certificates', $crtPath
+            'sudo cp "%s" /usr/share/ca-certificates/trust-source/anchors/ && sudo update-ca-trust', $crtPath
         ));
     }
 
