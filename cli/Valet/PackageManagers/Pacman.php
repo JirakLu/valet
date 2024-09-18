@@ -3,13 +3,10 @@
 namespace Valet\PackageManagers;
 
 use DomainException;
-use Illuminate\Support\Collection;
 use Valet\CommandLine;
 use Valet\Facades\PackageManager;
 use function Valet\info;
 use function Valet\output;
-use function Valet\starts_with;
-use function Valet\warning;
 
 class Pacman implements PackageManager {
 
@@ -43,6 +40,31 @@ class Pacman implements PackageManager {
         if (! $this->installed($package)) {
             $this->installOrFail($package);
         }
+    }
+
+    /**
+     * Determine if a compatible nginx version is installed.
+     */
+    public function hasInstalledNginx(): bool
+    {
+        return $this->cli->run('nginx -v') !== '';
+    }
+
+    /**
+     * Return name of the nginx service installed via Homebrew.
+     */
+    public function nginxServiceName(): string
+    {
+        return "nginx";
+    }
+
+    /**
+     * Uninstall a package by name.
+     */
+    public function uninstallFormula(string $package): void
+    {
+        output("Removing {$package}...");
+        $this->cli->runAsUser("sudo pacman -R --noconfirm $package");
     }
 
     public function isAvailable(): bool
