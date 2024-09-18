@@ -52,7 +52,7 @@ class PhpEnv
     public function installed(string $version): bool
     {
         $normalizedVersion = static::getRawPhpVersion($version);
-        return str_contains($this->cli->run('phpenv versions --bare'), $normalizedVersion);
+        return str_contains($this->cli->runAsUser('phpenv versions --bare'), $normalizedVersion);
     }
 
     /**
@@ -75,7 +75,7 @@ class PhpEnv
      */
     public function hasInstalledPhp(): bool
     {
-        $output = $this->cli->run('phpenv versions --bare');
+        $output = $this->cli->runAsUser('phpenv versions --bare');
         return !empty(trim($output));
     }
 
@@ -98,7 +98,7 @@ class PhpEnv
      */
     public function phpVersion(): string
     {
-        return 'php@'.$this->cli->run('phpenv version-name');
+        return 'php@'.$this->cli->runAsUser('phpenv version-name');
     }
 
     /**
@@ -106,7 +106,7 @@ class PhpEnv
      */
     public function phpVersions(): Collection
     {
-        return collect(explode("\n", $this->cli->run('phpenv versions --bare')))->map(fn ($version) => 'php@'.$version);
+        return collect(explode("\n", $this->cli->runAsUser('phpenv versions --bare')))->map(fn ($version) => 'php@'.$version);
     }
 
     /**

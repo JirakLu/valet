@@ -134,7 +134,7 @@ class PhpFpm
         $versionNormalized = $this->normalizePhpVersion($phpVersion === 'php' ? PhpEnv::LATEST_PHP_VERSION : $phpVersion);
         $versionNormalized = PhpEnv::getRawPhpVersion($versionNormalized);
 
-        return $_SERVER['home']."/.phpenv/versions/{$versionNormalized}/etc/php-fpm.d/valet-fpm.conf";
+        return $_SERVER['HOME']."/.phpenv/versions/{$versionNormalized}/etc/php-fpm.d/valet-fpm.conf";
     }
 
     /**
