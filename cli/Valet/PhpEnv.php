@@ -5,7 +5,8 @@ namespace Valet;
 use DomainException;
 use Illuminate\Support\Collection;
 
-class PhpEnv {
+class PhpEnv
+{
 
     // This is the array of PHP versions that Valet will attempt to install/configure when requested
     const array SUPPORTED_PHP_VERSIONS = [
@@ -28,6 +29,15 @@ class PhpEnv {
     ) {}
 
     /**
+     * Install and configure PhpEnv.
+     */
+    public function install(): void
+    {
+        info('Installing and configuring phpenv...');
+        // TODO: handle installing phpenv
+    }
+
+    /**
      * Normalize the PHP version.
      * Converts 'php@7.4.0' to '7.4.0'
      */
@@ -36,14 +46,6 @@ class PhpEnv {
         return str_replace('php@', '', $version);
     }
 
-    /**
-     * Install and configure PhpEnv.
-     */
-    public function install(): void
-    {
-        info('Installing and configuring phpenv...');
-        // TODO: handle installing phpenv
-    }
     /**
      * Ensure the version of PHP is installed.
      */

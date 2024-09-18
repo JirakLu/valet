@@ -39,3 +39,4 @@ class Status extends Facade {}
 class Upgrader extends Facade {}
 class Valet extends Facade {}
 class Cloudflared extends Facade {}
+class PhpEnv extends Facade {}
