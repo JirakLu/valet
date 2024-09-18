@@ -12,5 +12,7 @@ interface ServiceManager
 
     public function getAllRunningServices(): Collection;
 
+    public function isServiceRunning(string $service): bool;
+
     public function isAvailable(): bool;
 }

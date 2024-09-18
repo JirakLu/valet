@@ -2,6 +2,9 @@
 
 namespace Valet;
 
+use Valet\Facades\PackageManager;
+use Valet\Facades\ServiceManager;
+
 class Status
 {
     public $brewServicesUserOutput;
@@ -10,7 +13,7 @@ class Status
 
     public $debugInstructions = [];
 
-    public function __construct(public Configuration $config, public Brew $brew, public CommandLine $cli, public Filesystem $files) {}
+    public function __construct(public Configuration $config, public PackageManager $pm, public ServiceManager $sm, public PhpEnv $phpEnv, public CommandLine $cli, public Filesystem $files) {}
 
     /**
      * Check the status of the entire Valet ecosystem and return a status boolean
@@ -41,7 +44,7 @@ class Status
      */
     public function checks(): array
     {
-        $linkedPhp = $this->brew->getLinkedPhpFormula();
+        $phpVersion = $this->phpEnv->phpVersion();
 
         return [
             [
@@ -73,75 +76,48 @@ class Status
                 'debug' => 'Run `valet install` to update your configuration.',
             ],
             [
-                'description' => 'Is Homebrew installed?',
-                'check' => function () {
-                    return $this->cli->run('which brew') !== '';
-                },
-                'debug' => 'Visit https://brew.sh/ for instructions on installing Homebrew.',
-            ],
-            [
                 'description' => 'Is DnsMasq installed?',
                 'check' => function () {
-                    return $this->brew->installed('dnsmasq');
+                    return $this->pm->installed('dnsmasq');
                 },
                 'debug' => 'Run `valet install`.',
             ],
             [
                 'description' => 'Is Dnsmasq running?',
                 'check' => function () {
-                    return $this->isBrewServiceRunning('dnsmasq');
+                    return $this->sm->isServiceRunning('dnsmasq');
                 },
                 'debug' => 'Run `valet restart`.',
             ],
             [
-                'description' => 'Is Dnsmasq running as root?',
-                'check' => function () {
-                    return $this->isBrewServiceRunningAsRoot('dnsmasq');
-                },
-                'debug' => 'Uninstall Dnsmasq with Brew and run `valet install`.',
-            ],
-            [
                 'description' => 'Is Nginx installed?',
                 'check' => function () {
-                    return $this->brew->installed('nginx') || $this->brew->installed('nginx-full');
+                    return $this->pm->installed('nginx');
                 },
                 'debug' => 'Run `valet install`.',
             ],
             [
                 'description' => 'Is Nginx running?',
                 'check' => function () {
-                    return $this->isBrewServiceRunning('nginx');
+                    return $this->sm->isServiceRunning('nginx');
                 },
                 'debug' => 'Run `valet restart`.',
-            ],
-            [
-                'description' => 'Is Nginx running as root?',
-                'check' => function () {
-                    return $this->isBrewServiceRunningAsRoot('nginx');
-                },
-                'debug' => 'Uninstall nginx with Brew and run `valet install`.',
             ],
             [
                 'description' => 'Is PHP installed?',
                 'check' => function () {
-                    return $this->brew->hasInstalledPhp();
+                    return $this->phpEnv->hasInstalledPhp();
                 },
                 'debug' => 'Run `valet install`.',
             ],
             [
-                'description' => 'Is linked PHP ('.$linkedPhp.') running?',
-                'check' => function () use ($linkedPhp) {
-                    return $this->isBrewServiceRunning($linkedPhp);
+                'description' => 'Is linked PHP ('.$phpVersion.') running?',
+                'check' => function () use ($phpVersion) {
+                    return $this->sm->isServiceRunning($phpVersion);
                 },
                 'debug' => 'Run `valet restart`.',
             ],
-            [
-                'description' => 'Is linked PHP ('.$linkedPhp.') running as root?',
-                'check' => function () use ($linkedPhp) {
-                    return $this->isBrewServiceRunningAsRoot($linkedPhp);
-                },
-                'debug' => 'Uninstall PHP with Brew and run `valet use php@8.2`',
-            ],
+            // TODO: add check for phpenv installation
             [
                 'description' => 'Is valet.sock present?',
                 'check' => function () {
@@ -150,59 +126,6 @@ class Status
                 'debug' => 'Run `valet install`.',
             ],
         ];
-    }
-
-    public function isBrewServiceRunning(string $name, bool $exactMatch = true): bool
-    {
-        return $this->isBrewServiceRunningAsUser($name, $exactMatch)
-            || $this->isBrewServiceRunningAsRoot($name, $exactMatch);
-    }
-
-    public function isBrewServiceRunningAsRoot(string $name, bool $exactMatch = true): bool
-    {
-        if (! $this->brewServicesRootOutput) {
-            $this->brewServicesRootOutput = $this->jsonFromCli('brew services info --all --json', true);
-        }
-
-        return $this->isBrewServiceRunningGivenServiceList($this->brewServicesRootOutput, $name, $exactMatch);
-    }
-
-    public function isBrewServiceRunningAsUser(string $name, bool $exactMatch = true): bool
-    {
-        if (! $this->brewServicesUserOutput) {
-            $this->brewServicesUserOutput = $this->jsonFromCli('brew services info --all --json', false);
-        }
-
-        return $this->isBrewServiceRunningGivenServiceList($this->brewServicesUserOutput, $name, $exactMatch);
-    }
-
-    public function jsonFromCli(string $input, bool $sudo = false): array
-    {
-        $contents = $sudo ? $this->cli->run($input) : $this->cli->runAsUser($input);
-        // Skip to the JSON, to avoid warnings; we're only getting arrays so start with [
-        $contents = substr($contents, strpos($contents, '['));
-
-        try {
-            return json_decode($contents, false, 512, JSON_THROW_ON_ERROR);
-        } catch (\Throwable $e) {
-            $command = $sudo ? 'sudo '.$input : $input;
-            throw new \Exception('Invalid JSON returned from command: '.$command);
-        }
-    }
-
-    protected function isBrewServiceRunningGivenServiceList(array $serviceList, string $name, bool $exactMatch = true): bool
-    {
-        foreach ($serviceList as $service) {
-            if ($service->running === true) {
-                if ($exactMatch && $service->name == $name) {
-                    return true;
-                } elseif (! $exactMatch && str_contains($service->name, $name)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 
     public function valetInstalled(): bool
