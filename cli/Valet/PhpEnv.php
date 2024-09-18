@@ -34,7 +34,12 @@ class PhpEnv
     public function install(): void
     {
         info('Installing and configuring phpenv...');
+
         // TODO: handle installing phpenv
+
+        $this->cli->runAsUser("phpenv install".static::getRawPhpVersion(static::LATEST_PHP_VERSION));
+        $this->cli->runAsUser("phpenv rehash");
+        $this->cli->runAsUser("phpenv global".static::getRawPhpVersion(static::LATEST_PHP_VERSION));
     }
 
     /**
