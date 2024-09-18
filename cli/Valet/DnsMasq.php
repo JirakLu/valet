@@ -23,7 +23,7 @@ class DnsMasq
     {
         $this->pm->ensureInstalled('dnsmasq');
 
-        // For DnsMasq, we enable its feature of loading *.conf from /usr/local/etc/dnsmasq.d/
+        // For DnsMasq, we enable its feature of loading *.conf from /home/<user>
         // and then we put a valet config file in there to point to the user's home .config/valet/dnsmasq.d
         // This allows Valet to make changes to our own files without needing to modify the core dnsmasq configs
         $this->ensureUsingDnsmasqDForConfigs();

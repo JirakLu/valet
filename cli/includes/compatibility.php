@@ -21,3 +21,9 @@ if (version_compare(PHP_VERSION, '8.0', '<')) {
 
     exit(1);
 }
+
+if (exec('lsof -i :53') || exec('lsof -i :80') || exec('lsof -i :443')) {
+    echo 'Valet requires ports 53, 80, and 443 to be open.';
+
+    exit(1);
+}

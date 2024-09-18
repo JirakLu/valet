@@ -17,6 +17,7 @@ class Systemd implements ServiceManager
 
         foreach ($services as $service) {
             $this->cli->run("sudo systemctl restart {$service}");
+            $this->cli->run("sudo systemctl enable --now {$service}");
         }
     }
 
@@ -25,6 +26,7 @@ class Systemd implements ServiceManager
         $services = is_array($services) ? $services : func_get_args();
 
         foreach ($services as $service) {
+            $this->cli->run("sudo systemctl disable {$service}");
             $this->cli->run("sudo systemctl stop {$service}");
         }
     }
