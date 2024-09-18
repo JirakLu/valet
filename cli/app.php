@@ -587,7 +587,7 @@ if (is_dir(VALET_HOME_PATH)) {
         // Stop PHP so the ~/.config/valet/valet.sock file is released so the directory can be deleted if desired
         PhpFpm::stopRunning();
         Nginx::stop();
-    })->descriptions('Uninstall the Valet services', ['--force' => 'Do a forceful uninstall of Valet and related Homebrew pkgs']);
+    })->descriptions('Uninstall the Valet services', ['--force' => 'Do a forceful uninstall of Valet and related packages']);
 
     /**
      * Determine if this is the latest release of Valet.

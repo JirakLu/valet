@@ -526,10 +526,10 @@ class Site
         if ($this->files->exists($caKeyPath) && $this->files->exists($caPemPath)) {
 
             $isTrusted = $this->cli->run(sprintf(
-                'security verify-cert -c "%s"', $caPemPath
+                'openssl verify "%s"', $caPemPath
             ));
 
-            if (strpos($isTrusted, '...certificate verification successful.') === false) {
+            if (!str_contains($isTrusted, '...certificate verification successful.')) {
                 $this->trustCa($caPemPath);
             }
 
@@ -547,7 +547,7 @@ class Site
         }
 
         $this->cli->run(sprintf(
-            'sudo security delete-certificate -c "%s" /Library/Keychains/System.keychain',
+            'sudo rm -f /etc/ssl/certs/%s',
             $cName
         ));
 
@@ -574,7 +574,7 @@ class Site
         $cName = 'Laravel Valet CA Self Signed CN';
 
         $this->cli->run(sprintf(
-            'sudo security delete-certificate -c "%s" /Library/Keychains/System.keychain',
+            'sudo rm -f /etc/ssl/certs/%s',
             $cName
         ));
     }
@@ -637,13 +637,13 @@ class Site
     }
 
     /**
-     * Trust the given root certificate file in the macOS Keychain.
+     * Trust the given root certificate file in the linux.
      */
     public function trustCa(string $caPemPath): void
     {
         info('Trusting Laravel Valet Certificate Authority...');
         $result = $this->cli->run(sprintf(
-            'sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain "%s"',
+            'sudo cp "%s" /usr/local/share/ca-certificates && sudo update-ca-certificates',
             $caPemPath
         ));
         if ($result) {
@@ -657,7 +657,7 @@ class Site
     public function trustCertificate(string $crtPath): void
     {
         $this->cli->run(sprintf(
-            'sudo security add-trusted-cert -d -r trustAsRoot -k /Library/Keychains/System.keychain "%s"', $crtPath
+            'sudo cp "%s" /usr/local/share/ca-certificates && sudo update-ca-certificates', $crtPath
         ));
     }
 
