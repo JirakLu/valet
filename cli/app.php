@@ -741,7 +741,7 @@ if (is_dir(VALET_HOME_PATH)) {
      */
     $app->command('log [-f|--follow] [-l|--lines=] [key]', function (OutputInterface $output, $follow, $lines, $key = null) {
         $defaultLogs = [
-            'php-fpm' => BREW_PREFIX.'/var/log/php-fpm.log',
+            'php-fpm' => '/var/log/php-fpm.log',
             'nginx' => VALET_HOME_PATH.'/Log/nginx-error.log',
         ];
 
