@@ -37,9 +37,9 @@ class PhpEnv
 
         // TODO: handle installing phpenv
 
-        $this->cli->runAsUser("phpenv install".static::getRawPhpVersion(static::LATEST_PHP_VERSION));
-        $this->cli->runAsUser("phpenv rehash");
-        $this->cli->runAsUser("phpenv global".static::getRawPhpVersion(static::LATEST_PHP_VERSION));
+        $this->cli->runAsUser("/home/lukas/.phpenv/libexec/phpenv install".static::getRawPhpVersion(static::LATEST_PHP_VERSION));
+        $this->cli->runAsUser("/home/lukas/.phpenv/libexec/phpenv rehash");
+        $this->cli->runAsUser("/home/lukas/.phpenv/libexec/phpenv global".static::getRawPhpVersion(static::LATEST_PHP_VERSION));
     }
 
     /**
@@ -57,7 +57,7 @@ class PhpEnv
     public function installed(string $version): bool
     {
         $normalizedVersion = static::getRawPhpVersion($version);
-        return str_contains($this->cli->runAsUser('phpenv versions --bare'), $normalizedVersion);
+        return str_contains($this->cli->runAsUser("/home/lukas/.phpenv/libexec/phpenv versions --bare"), $normalizedVersion);
     }
 
     /**
@@ -68,7 +68,7 @@ class PhpEnv
         info("Installing {$version}...");
 
         $normalizedVersion = static::getRawPhpVersion($version);
-        $this->cli->runAsUser('phpenv install '.$normalizedVersion, function ($exitCode, $errorOutput) use ($version) {
+        $this->cli->runAsUser("/home/lukas/.phpenv/libexec/phpenv install ".$normalizedVersion, function ($exitCode, $errorOutput) use ($version) {
             output($errorOutput);
 
             throw new DomainException('PHP version ['.$version.'] could not be installed.');
@@ -80,7 +80,7 @@ class PhpEnv
      */
     public function hasInstalledPhp(): bool
     {
-        $output = $this->cli->runAsUser('phpenv versions --bare');
+        $output = $this->cli->runAsUser("/home/lukas/.phpenv/libexec/phpenv versions --bare");
         // TODO: investigate
         $output = str_replace('sudo: phpenv: command not found', '', $output);
         return !empty(trim($output));
@@ -105,7 +105,7 @@ class PhpEnv
      */
     public function phpVersion(): string
     {
-        return 'php@'.$this->cli->runAsUser('phpenv version-name');
+        return 'php@'.$this->cli->runAsUser("/home/lukas/.phpenv/libexec/phpenv version-name");
     }
 
     /**
@@ -113,7 +113,7 @@ class PhpEnv
      */
     public function phpVersions(): Collection
     {
-        return collect(explode("\n", $this->cli->runAsUser('phpenv versions --bare')))->map(fn ($version) => 'php@'.$version);
+        return collect(explode("\n", $this->cli->runAsUser("/home/lukas/.phpenv/libexec/phpenv versions --bare")))->map(fn ($version) => 'php@'.$version);
     }
 
     /**
@@ -123,7 +123,7 @@ class PhpEnv
     {
         info("Uninstalling {$version}...");
 
-        $this->cli->runAsUser('phpenv uninstall '.$version, function ($exitCode, $errorOutput) use ($version) {
+        $this->cli->runAsUser("/home/lukas/.phpenv/libexec/phpenv uninstall ".$version, function ($exitCode, $errorOutput) use ($version) {
             output($errorOutput);
 
             throw new DomainException('PHP version ['.$version.'] could not be uninstalled.');
