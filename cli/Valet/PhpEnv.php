@@ -22,7 +22,7 @@ class PhpEnv
 
     // Update this LATEST and the following LIMITED array when PHP versions are released or retired
     // We specify a numbered version here even though Homebrew links its generic 'php' alias to it
-    const string LATEST_PHP_VERSION = 'php@8.3.0';
+    const string LATEST_PHP_VERSION = 'php@8.3.11';
 
     public function __construct(
         public CommandLine $cli,
@@ -76,6 +76,8 @@ class PhpEnv
     public function hasInstalledPhp(): bool
     {
         $output = $this->cli->runAsUser('phpenv versions --bare');
+        // TODO: investigate
+        $output = str_replace('sudo: phpenv: command not found', '', $output);
         return !empty(trim($output));
     }
 
