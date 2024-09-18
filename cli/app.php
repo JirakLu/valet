@@ -59,6 +59,7 @@ Valet::environmentSetup();
  * Install Valet and any required services.
  */
 $app->command('install', function (OutputInterface $output) {
+    // add available port checking for 53,80,443
     Nginx::stop();
 
     Configuration::install();

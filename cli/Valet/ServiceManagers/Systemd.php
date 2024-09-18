@@ -41,11 +41,12 @@ class Systemd implements ServiceManager
 
     public function isServiceRunning(string $service): bool
     {
-        return $this->cli->run("systemctl is-active --quiet {$service}") == 0;
+        $this->cli->run("systemctl is-active --quiet {$service}", fn ($exitCode) => $exitCode !== 0);
+        return true;
     }
 
     public function isAvailable(): bool
     {
-        return $this->cli->run('command -v systemctl') !== '';
+        return $this->cli->run('command -v systemctl', ) !== '';
     }
 }
