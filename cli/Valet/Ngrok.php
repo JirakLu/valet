@@ -5,15 +5,16 @@ namespace Valet;
 use DomainException;
 use Exception;
 use GuzzleHttp\Client;
+use Valet\Facades\PackageManager;
 
 class Ngrok
 {
-    public $tunnelsEndpoints = [
+    public array $tunnelsEndpoints = [
         'http://127.0.0.1:4040/api/tunnels',
         'http://127.0.0.1:4041/api/tunnels',
     ];
 
-    public function __construct(public CommandLine $cli, public Brew $brew) {}
+    public function __construct(public CommandLine $cli, public PackageManager $pm) {}
 
     /**
      * Get the current tunnel URL from the Ngrok API.
@@ -80,7 +81,7 @@ class Ngrok
      */
     public function setToken($token): string
     {
-        return $this->cli->runAsUser(BREW_PREFIX.'/bin/ngrok authtoken '.$token);
+        return $this->cli->runAsUser('/bin/ngrok authtoken '.$token);
     }
 
     /**
@@ -88,7 +89,7 @@ class Ngrok
      */
     public function installed(): bool
     {
-        return $this->brew->installed('ngrok');
+        return $this->pm->installed('ngrok');
     }
 
     /**
@@ -96,6 +97,7 @@ class Ngrok
      */
     public function ensureInstalled(): void
     {
-        $this->brew->ensureInstalled('ngrok');
+        // TODO: add support for AUR on arch or use ngrok binary
+        $this->pm->ensureInstalled('ngrok');
     }
 }

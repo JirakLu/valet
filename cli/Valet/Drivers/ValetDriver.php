@@ -63,6 +63,7 @@ abstract class ValetDriver
                 return $driver;
             }
         }
+        return null;
     }
 
     /**

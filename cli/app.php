@@ -11,6 +11,7 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Valet\Drivers\ValetDriver;
 
+use Valet\PhpEnv;
 use function Valet\info;
 use function Valet\output;
 use function Valet\table;
@@ -64,6 +65,8 @@ $app->command('install', function (OutputInterface $output) {
     Configuration::install();
     output();
     Nginx::install();
+    output();
+    PhpEnv::install();
     output();
     PhpFpm::install();
     output();

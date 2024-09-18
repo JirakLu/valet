@@ -4,13 +4,8 @@ namespace Valet;
 
 class Server
 {
-    // Skip constructor promotion until we stop supporting PHP@7.4 isolation
-    public $config;
 
-    public function __construct(array $config)
-    {
-        $this->config = $config;
-    }
+    public function __construct(public array $config) {}
 
     /**
      * Extract $uri from $SERVER['REQUEST_URI'] variable.
@@ -33,7 +28,7 @@ class Server
     /**
      * Show the Valet 404 "Not Found" page.
      */
-    public static function show404()
+    public static function show404(): void
     {
         http_response_code(404);
         require __DIR__.'/../../cli/templates/404.html';
@@ -82,7 +77,7 @@ class Server
      * Return the root level Valet site if given the request URI ($_SERVER['REQUEST_URI'])
      * of an address using IP address local access.
      *
-     * E.g. URL is 192.168.1.100/onramp.tes/auth/login, passes $uri as onramp.test/auth/login and
+     * E.g. URL is 192.168.1.100/onramp.test/auth/login, passes $uri as onramp.test/auth/login and
      * $tld as 'test', and this method returns onramp.test
      *
      * For use when accessing Valet sites across a local network.
@@ -107,7 +102,7 @@ class Server
             '.'.$this->config['tld']
         );
 
-        if (strpos($siteName, 'www.') === 0) {
+        if (str_starts_with($siteName, 'www.')) {
             $siteName = substr($siteName, 4);
         }
 
@@ -143,7 +138,7 @@ class Server
             $domain = array_pop($matches);
         }
 
-        if (strpos($domain, ':') !== false) {
+        if (str_contains($domain, ':')) {
             $domain = explode(':', $domain)[0];
         }
 

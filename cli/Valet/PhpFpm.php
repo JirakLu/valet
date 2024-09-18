@@ -4,16 +4,13 @@ namespace Valet;
 
 use DomainException;
 use Illuminate\Support\Collection;
+use Valet\Facades\ServiceManager;
 
 class PhpFpm
 {
-    public $taps = [
-        'homebrew/homebrew-core',
-        'shivammathur/php',
-    ];
-
     public function __construct(
-        public Brew $brew,
+        public PhpEnv $phpEnv,
+        public ServiceManager $sm,
         public CommandLine $cli,
         public Filesystem $files,
         public Configuration $config,
@@ -28,13 +25,13 @@ class PhpFpm
     {
         info('Installing and configuring phpfpm...');
 
-        if (! $this->brew->hasInstalledPhp()) {
-            $this->brew->ensureInstalled('php', [], $this->taps);
+        if (! $this->phpEnv->hasInstalledPhp()) {
+            $this->phpEnv->ensureInstalled('php');
         }
 
         $this->files->ensureDirExists(VALET_HOME_PATH.'/Log', user());
 
-        $phpVersion = $this->brew->linkedPhp();
+        $phpVersion = $this->phpEnv->phpVersion();
         $this->createConfigurationFiles($phpVersion);
 
         // Remove old valet.sock
@@ -51,9 +48,9 @@ class PhpFpm
      */
     public function uninstall(): void
     {
-        $this->brew->uninstallAllPhpVersions();
-        rename(BREW_PREFIX.'/etc/php', BREW_PREFIX.'/etc/php-valet-bak'.time());
-        $this->cli->run('rm -rf '.BREW_PREFIX.'/var/log/php-fpm.log');
+        // TODO: rewrite this
+        $this->phpEnv->uninstallAllPhpVersions();
+        $this->cli->run('rm -rf /var/log/php-fpm.log');
     }
 
     /**
@@ -109,7 +106,8 @@ class PhpFpm
      */
     public function restart(?string $phpVersion = null): void
     {
-        $this->brew->restartService($phpVersion ?: $this->utilizedPhpVersions());
+        $phpVersion = $phpVersion === 'php' ? PhpEnv::LATEST_PHP_VERSION : $phpVersion;
+        $this->sm->restartService($phpVersion ?: $this->utilizedPhpVersions());
     }
 
     /**
@@ -119,8 +117,8 @@ class PhpFpm
     {
         info('Stopping phpfpm...');
         call_user_func_array(
-            [$this->brew, 'stopService'],
-            Brew::SUPPORTED_PHP_VERSIONS
+            [$this->sm, 'stopService'],
+            PhpEnv::SUPPORTED_PHP_VERSIONS
         );
     }
 
@@ -130,13 +128,13 @@ class PhpFpm
     public function fpmConfigPath(?string $phpVersion = null): string
     {
         if (! $phpVersion) {
-            $phpVersion = $this->brew->linkedPhp();
+            $phpVersion = $this->phpEnv->phpVersion();
         }
 
-        $versionNormalized = $this->normalizePhpVersion($phpVersion === 'php' ? Brew::LATEST_PHP_VERSION : $phpVersion);
-        $versionNormalized = preg_replace('~[^\d\.]~', '', $versionNormalized);
+        $versionNormalized = $this->normalizePhpVersion($phpVersion === 'php' ? PhpEnv::LATEST_PHP_VERSION : $phpVersion);
+        $versionNormalized = PhpEnv::getRawPhpVersion($versionNormalized);
 
-        return BREW_PREFIX."/etc/php/{$versionNormalized}/php-fpm.d/valet-fpm.conf";
+        return $_SERVER['home']."/.phpenv/versions/{$versionNormalized}/etc/php-fpm.d/valet-fpm.conf";
     }
 
     /**
@@ -145,10 +143,10 @@ class PhpFpm
     public function stopRunning(): void
     {
         info('Stopping phpfpm...');
-        $this->brew->stopService(
-            $this->brew->getAllRunningServices()
+        $this->sm->stopService(
+            $this->sm->getAllRunningServices()
                 ->filter(function ($service) {
-                    return substr($service, 0, 3) === 'php';
+                    return str_starts_with($service, 'php@');
                 })
                 ->all()
         );
@@ -166,7 +164,7 @@ class PhpFpm
         $phpVersion = $this->normalizePhpVersion($phpVersion);
 
         if (! in_array($phpVersion, $this->utilizedPhpVersions())) {
-            $this->brew->stopService($phpVersion);
+            $this->sm->stopService($phpVersion);
         }
     }
 
@@ -179,9 +177,9 @@ class PhpFpm
 
         $version = $this->validateRequestedVersion($version);
 
-        $this->brew->ensureInstalled($version, [], $this->taps);
+        $this->phpEnv->ensureInstalled($version);
 
-        $oldCustomPhpVersion = $this->site->customPhpVersion($site); // Example output: "74"
+        $oldCustomPhpVersion = $this->site->customPhpVersion($site); // Example output: "740"
         $this->createConfigurationFiles($version);
 
         $this->site->isolate($site, $version);
@@ -200,7 +198,7 @@ class PhpFpm
     {
         $site = $this->site->getSiteUrl($directory);
 
-        $oldCustomPhpVersion = $this->site->customPhpVersion($site); // Example output: "74"
+        $oldCustomPhpVersion = $this->site->customPhpVersion($site); // Example output: "740"
 
         $this->site->removeIsolation($site);
         $this->stopIfUnused($oldCustomPhpVersion);
@@ -215,7 +213,7 @@ class PhpFpm
     public function isolatedDirectories(): Collection
     {
         return $this->nginx->configuredSites()->filter(function ($item) {
-            return strpos($this->files->get(VALET_HOME_PATH.'/Nginx/'.$item), ISOLATED_PHP_VERSION) !== false;
+            return str_contains($this->files->get(VALET_HOME_PATH . '/Nginx/' . $item), ISOLATED_PHP_VERSION);
         })->map(function ($item) {
             return ['url' => $item, 'version' => $this->normalizePhpVersion($this->site->customPhpVersion($item))];
         });
@@ -229,7 +227,7 @@ class PhpFpm
         $version = $this->validateRequestedVersion($version);
 
         try {
-            if ($version === $this->brew->linkedPhp() && ! $force) {
+            if ($version === $this->phpEnv->phpVersion() && ! $force) {
                 output(sprintf('<info>Valet is already using version: <comment>%s</comment>.</info> To re-link and re-configure use the --force parameter.'.PHP_EOL,
                     $version));
                 exit();
@@ -237,30 +235,21 @@ class PhpFpm
         } catch (DomainException $e) { /* ignore thrown exception when no linked php is found */
         }
 
-        $this->brew->ensureInstalled($version, [], $this->taps);
+        $this->phpEnv->ensureInstalled($version);
 
-        // Unlink the current global PHP if there is one installed
-        if ($this->brew->hasLinkedPhp()) {
-            $currentVersion = $this->brew->getLinkedPhpFormula();
-            info(sprintf('Unlinking current version: %s', $currentVersion));
-            $this->brew->unlink($currentVersion);
-        }
-
-        info(sprintf('Linking new version: %s', $version));
-        $this->brew->link($version, true);
+        info(sprintf('Setting up new version: %s', $version));
+        $this->phpEnv->use($version);
 
         $this->stopRunning();
 
         $this->install();
 
-        $newVersion = $version === 'php' ? $this->brew->determineAliasedVersion($version) : $version;
-
         $this->nginx->restart();
 
-        info(sprintf('Valet is now using %s.', $newVersion).PHP_EOL);
+        info(sprintf('Valet is now using %s.', $version).PHP_EOL);
         info('Note that you might need to run <comment>composer global update</comment> if your PHP version change affects the dependencies of global packages required by Composer.');
 
-        return $newVersion;
+        return $version;
     }
 
     /**
@@ -272,11 +261,11 @@ class PhpFpm
     }
 
     /**
-     * If passed php7.4, or php74, 7.4, or 74 formats, normalize to php@7.4 format.
+     * If passed php7.4.0, or php740, 7.4.0, or 740 formats, normalize to php@7.4.0 format.
      */
     public function normalizePhpVersion(?string $version): string
     {
-        return preg_replace('/(?:php@?)?([0-9+])(?:.)?([0-9+])/i', 'php@$1.$2', (string) $version);
+        return preg_replace('/(?:php@?)?([0-9+]).?([0-9+]).?([0-9+])/i', 'php@$1.$2.$3', (string) $version);
     }
 
     /**
@@ -284,23 +273,15 @@ class PhpFpm
      */
     public function validateRequestedVersion(string $version): string
     {
-        if (is_null($version)) {
-            throw new DomainException("Please specify a PHP version (try something like 'php@8.1')");
-        }
-
         $version = $this->normalizePhpVersion($version);
 
-        if (! $this->brew->supportedPhpVersions()->contains($version)) {
-            throw new DomainException("Valet doesn't support PHP version: {$version} (try something like 'php@8.1' instead)");
-        }
-
-        if (strpos($aliasedVersion = $this->brew->determineAliasedVersion($version), '@')) {
-            return $aliasedVersion;
+        if (! $this->phpEnv->supportedPhpVersions()->contains($version)) {
+            throw new DomainException("Valet doesn't support PHP version: {$version} (try something like 'php@8.1.0' instead)");
         }
 
         if ($version === 'php') {
-            if ($this->brew->hasInstalledPhp()) {
-                throw new DomainException('Brew is already using PHP '.PHP_VERSION.' as \'php\' in Homebrew. To use another version, please specify. eg: php@8.1');
+            if ($this->phpEnv->isUsingLatestPhp()) {
+                throw new DomainException('PhpEnv is already using the latest version. To use another version, please specify. eg: php@8.1.0');
             }
         }
 
@@ -312,7 +293,8 @@ class PhpFpm
      */
     public static function fpmSockName(?string $phpVersion = null): string
     {
-        $versionInteger = preg_replace('~[^\d]~', '', $phpVersion);
+        $phpVersion = $phpVersion === 'php' ? PhpEnv::LATEST_PHP_VERSION : $phpVersion;
+        $versionInteger = PhpEnv::getRawPhpVersion($phpVersion);
 
         return "valet{$versionInteger}.sock";
     }
@@ -323,7 +305,7 @@ class PhpFpm
      */
     public function utilizedPhpVersions(): array
     {
-        $fpmSockFiles = $this->brew->supportedPhpVersions()->map(function ($version) {
+        $fpmSockFiles = $this->phpEnv->supportedPhpVersions()->map(function ($version) {
             return self::fpmSockName($this->normalizePhpVersion($version));
         })->unique();
 
@@ -332,11 +314,12 @@ class PhpFpm
 
             // Get the normalized PHP version for this config file, if it's defined
             foreach ($fpmSockFiles as $sock) {
-                if (strpos($content, $sock) !== false) {
+                if (str_contains($content, $sock)) {
                     // Extract the PHP version number from a custom .sock path and normalize it to, e.g., "php@7.4"
                     return $this->normalizePhpVersion(str_replace(['valet', '.sock'], '', $sock));
                 }
             }
-        })->merge([$this->brew->getLinkedPhpFormula()])->filter()->unique()->values()->toArray();
+        })->filter()->unique()->values()->toArray();
     }
+
 }

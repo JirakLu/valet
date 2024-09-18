@@ -9,44 +9,29 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 class Diagnose
 {
     public $commands = [
-        'sw_vers',
         'valet --version',
         'cat ~/.config/valet/config.json',
         'cat ~/.composer/composer.json',
         'composer global diagnose',
         'composer global outdated',
         'ls -al /etc/sudoers.d/',
-        'brew update > /dev/null 2>&1',
-        'brew config',
-        'brew services list',
-        'brew list --formula --versions | grep -E "(php|nginx|dnsmasq|mariadb|mysql|mailhog|openssl)(@\d\..*)?\s"',
-        'brew outdated',
-        'brew tap',
         'php -v',
         'which -a php',
         'php --ini',
         'nginx -v',
         'curl --version',
         'php --ri curl',
-        BREW_PREFIX.'/bin/ngrok version',
-        'ls -al ~/.ngrok2',
-        'brew info nginx',
-        'brew info php',
-        'brew info openssl',
+        '/bin/ngrok version',
         'openssl version -a',
         'openssl ciphers',
         'sudo nginx -t',
         'which -a php-fpm',
-        BREW_PREFIX.'/opt/php/sbin/php-fpm -v',
-        'sudo '.BREW_PREFIX.'/opt/php/sbin/php-fpm -y '.PHP_SYSCONFDIR.'/php-fpm.conf --test',
-        'ls -al ~/Library/LaunchAgents | grep homebrew',
-        'ls -al /Library/LaunchAgents | grep homebrew',
-        'ls -al /Library/LaunchDaemons | grep homebrew',
-        'ls -al /Library/LaunchDaemons | grep "com.laravel.valet."',
+        'php-fpm -v',
+        'sudo php-fpm -y '.PHP_SYSCONFDIR.'/php-fpm.conf --test',
         'ls -aln /etc/resolv.conf',
         'cat /etc/resolv.conf',
         'ifconfig lo0',
-        'sh -c \'echo "------\n'.BREW_PREFIX.'/etc/nginx/valet/valet.conf\n---\n"; cat '.BREW_PREFIX.'/etc/nginx/valet/valet.conf | grep -n "# valet loopback"; echo "\n------\n"\'',
+        'sh -c \'echo "------\n/etc/nginx/valet/valet.conf\n---\n"; cat /etc/nginx/valet/valet.conf | grep -n "# valet loopback"; echo "\n------\n"\'',
         'sh -c \'for file in ~/.config/valet/dnsmasq.d/*; do echo "------\n~/.config/valet/dnsmasq.d/$(basename $file)\n---\n"; cat $file; echo "\n------\n"; done\'',
         'sh -c \'for file in ~/.config/valet/nginx/*; do echo "------\n~/.config/valet/nginx/$(basename $file)\n---\n"; cat $file | grep -n "# valet loopback"; echo "\n------\n"; done\'',
     ];
@@ -113,7 +98,7 @@ class Diagnose
 
     public function runCommand(string $command): string
     {
-        return strpos($command, 'sudo ') === 0
+        return str_starts_with($command, 'sudo ')
             ? $this->cli->run($command)
             : $this->cli->runAsUser($command);
     }
@@ -136,7 +121,7 @@ class Diagnose
 
     public function ignoreOutput(string $command): bool
     {
-        return strpos($command, '> /dev/null 2>&1') !== false;
+        return str_contains($command, '> /dev/null 2>&1');
     }
 
     public function format(Collection $results, bool $plainText): string

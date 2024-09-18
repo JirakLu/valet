@@ -9,7 +9,7 @@ use PhpFpm;
 
 class Site
 {
-    public function __construct(public Brew $brew, public Configuration $config, public CommandLine $cli, public Filesystem $files) {}
+    public function __construct(public PhpEnv $phpEnv, public Configuration $config, public CommandLine $cli, public Filesystem $files) {}
 
     /**
      * Get the name of the site.
@@ -312,7 +312,7 @@ class Site
      */
     public function getPhpVersion(string $url): string
     {
-        $defaultPhpVersion = $this->brew->linkedPhp();
+        $defaultPhpVersion = $this->phpEnv->phpVersion();
         $phpVersion = PhpFpm::normalizePhpVersion($this->customPhpVersion($url));
         if (empty($phpVersion)) {
             $phpVersion = PhpFpm::normalizePhpVersion($defaultPhpVersion);

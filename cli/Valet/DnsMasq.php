@@ -2,22 +2,26 @@
 
 namespace Valet;
 
+use JsonException;
+use Valet\Facades\PackageManager;
+use Valet\Facades\ServiceManager;
+
 class DnsMasq
 {
-    public $dnsmasqMasterConfigFile = BREW_PREFIX.'/etc/dnsmasq.conf';
+    public string $dnsmasqMasterConfigFile = '/etc/dnsmasq.conf';
 
-    public $dnsmasqSystemConfDir = BREW_PREFIX.'/etc/dnsmasq.d';
+    public string $dnsmasqSystemConfDir = '/etc/dnsmasq.d';
 
-    public $resolverPath = '/etc/resolver';
+    public string $resolverPath = '/etc/resolver';
 
-    public function __construct(public Brew $brew, public CommandLine $cli, public Filesystem $files, public Configuration $configuration) {}
+    public function __construct(public PackageManager $pm, public ServiceManager $sm, public CommandLine $cli, public Filesystem $files, public Configuration $configuration) {}
 
     /**
      * Install and configure DnsMasq.
      */
     public function install(string $tld = 'test'): void
     {
-        $this->brew->ensureInstalled('dnsmasq');
+        $this->pm->ensureInstalled('dnsmasq');
 
         // For DnsMasq, we enable its feature of loading *.conf from /usr/local/etc/dnsmasq.d/
         // and then we put a valet config file in there to point to the user's home .config/valet/dnsmasq.d
@@ -28,26 +32,22 @@ class DnsMasq
 
         $this->createTldResolver($tld);
 
-        $this->brew->restartService('dnsmasq');
+        $this->sm->restartService('dnsmasq');
 
         info('Valet is configured to serve for TLD [.'.$tld.']');
     }
 
     /**
      * Forcefully uninstall dnsmasq.
+     * @throws JsonException
      */
     public function uninstall(): void
     {
-        $this->brew->stopService('dnsmasq');
-        $this->brew->uninstallFormula('dnsmasq');
-        $this->cli->run('rm -rf '.BREW_PREFIX.'/etc/dnsmasq.d/dnsmasq-valet.conf');
-
-        // As Laravel Herd uses the same DnsMasq resolver, we should only
-        // delete it if Herd is not installed.
-        if (! $this->files->exists('/Applications/Herd.app')) {
-            $tld = $this->configuration->read()['tld'];
-            $this->files->unlink($this->resolverPath.'/'.$tld);
-        }
+        $this->sm->stopService('dnsmasq');
+        $this->pm->uninstallFormula('dnsmasq');
+        $this->cli->run('rm -rf /etc/dnsmasq.d/dnsmasq-valet.conf');
+        $tld = $this->configuration->read()['tld'];
+        $this->files->unlink($this->resolverPath.'/'.$tld);
     }
 
     /**
@@ -55,7 +55,7 @@ class DnsMasq
      */
     public function stop(): void
     {
-        $this->brew->stopService(['dnsmasq']);
+        $this->sm->stopService(['dnsmasq']);
     }
 
     /**
@@ -63,7 +63,7 @@ class DnsMasq
      */
     public function restart(): void
     {
-        $this->brew->restartService('dnsmasq');
+        $this->sm->restartService('dnsmasq');
     }
 
     /**
@@ -73,13 +73,13 @@ class DnsMasq
     {
         info('Updating Dnsmasq configuration...');
 
-        // set primary config to look for configs in /usr/local/etc/dnsmasq.d/*.conf
+        // set primary config to look for configs in /etc/dnsmasq.d/*.conf
         $contents = $this->files->get($this->dnsmasqMasterConfigFile);
         // ensure the line we need to use is present, and uncomment it if needed
-        if (strpos($contents, 'conf-dir='.BREW_PREFIX.'/etc/dnsmasq.d/,*.conf') === false) {
-            $contents .= PHP_EOL.'conf-dir='.BREW_PREFIX.'/etc/dnsmasq.d/,*.conf'.PHP_EOL;
+        if (!str_contains($contents, 'conf-dir=/etc/dnsmasq.d/,*.conf')) {
+            $contents .= PHP_EOL.'conf-dir=/etc/dnsmasq.d/,*.conf'.PHP_EOL;
         }
-        $contents = str_replace('#conf-dir='.BREW_PREFIX.'/etc/dnsmasq.d/,*.conf', 'conf-dir='.BREW_PREFIX.'/etc/dnsmasq.d/,*.conf', $contents);
+        $contents = str_replace('#conf-dir=/etc/dnsmasq.d/,*.conf', 'conf-dir=/etc/dnsmasq.d/,*.conf', $contents);
 
         // remove entries used by older Valet versions:
         $contents = preg_replace('/^conf-file.*valet.*$/m', '', $contents);

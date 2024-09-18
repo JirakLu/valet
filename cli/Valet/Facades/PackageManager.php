@@ -6,7 +6,7 @@ use Illuminate\Support\Collection;
 
 interface PackageManager
 {
-    public function installed(string $formula): bool;
+    public function installed(string $package): bool;
 
     public function hasInstalledPhp(): bool;
 
@@ -48,11 +48,13 @@ interface PackageManager
 
     public function uninstallAllPhpVersions(): string;
 
-    public function uninstallFormula(string $formula): void;
+    public function uninstallFormula(string $package): void;
 
     public function cleanupBrew(): string;
 
     public function parsePhpPath(string $resolvedPath): array;
 
     public function arePhpVersionsEqual(string $versionA, string $versionB): bool;
+
+    public function isAvailable(): bool;
 }

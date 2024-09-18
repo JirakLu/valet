@@ -3,10 +3,11 @@
 namespace Valet;
 
 use GuzzleHttp\Client;
+use Valet\Facades\PackageManager;
 
 class Cloudflared
 {
-    public function __construct(public CommandLine $cli, public Brew $brew) {}
+    public function __construct(public CommandLine $cli, public PackageManager $pm) {}
 
     public function currentTunnelUrl(string $domain): ?string
     {
@@ -55,7 +56,7 @@ class Cloudflared
      */
     public function installed(): bool
     {
-        return $this->brew->installed('cloudflared');
+        return $this->pm->installed('cloudflared');
     }
 
     /**
@@ -63,6 +64,6 @@ class Cloudflared
      */
     public function ensureInstalled(): void
     {
-        $this->brew->ensureInstalled('cloudflared');
+        $this->pm->ensureInstalled('cloudflared');
     }
 }

@@ -8,12 +8,8 @@ use Valet\Facades\ServiceManager;
 
 class Systemd implements ServiceManager
 {
-    protected CommandLine $cli;
 
-    public function __construct(CommandLine $cli)
-    {
-        $this->cli = $cli;
-    }
+    public function __construct(public CommandLine $cli) {}
 
     public function restartService($services): void
     {

@@ -7,6 +7,7 @@ use GuzzleHttp\Client;
 use Illuminate\Container\Container;
 use Valet\Facades\PackageManager;
 use Valet\Facades\ServiceManager;
+use Valet\PackageManagers\Pacman;
 use Valet\ServiceManagers\Systemd;
 
 class Valet
@@ -164,6 +165,13 @@ You might also want to investigate your global Composer configs. Helpful command
      */
     public function getAvailablePackageManager(): string
     {
+        return collect([
+            Pacman::class,
+        ])->first(static function ($pm) {
+            return resolve($pm)->isAvailable();
+        }, static function () {
+            throw new DomainException("No compatible package manager found.");
+        });
     }
 
     /**
