@@ -1067,10 +1067,7 @@ class Site
             $siteConf = $this->files->get($this->nginxPath($url));
 
             if (starts_with($siteConf, '# '.ISOLATED_PHP_VERSION)) {
-                $firstLine = explode(PHP_EOL, $siteConf)[0];
-
-                // TODO: user normalize from PhpEnv
-                return preg_replace("/[^\d]*/", '', $firstLine); // Example output: "7.4.0" or "8.2.23"
+                return explode('=', explode(PHP_EOL, $siteConf)[0])[1]; // example output php@8.3.11
             }
         }
 
