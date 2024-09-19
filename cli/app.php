@@ -605,14 +605,13 @@ if (is_dir(VALET_HOME_PATH)) {
      * Install the sudoers.d entries so password is no longer required.
      */
     $app->command('trust [--off]', function (OutputInterface $output, $off) {
+        // TODO: add more sudoers entries for SM and PHPENV
         if ($off) {
-            Brew::removeSudoersEntry();
             Valet::removeSudoersEntry();
 
-            return info('Sudoers entries have been removed for Brew and Valet.');
+            return info('Sudoers entries have been removed for Valet.');
         }
 
-        Brew::createSudoersEntry();
         Valet::createSudoersEntry();
 
         info('Sudoers entries have been added for Brew and Valet.');

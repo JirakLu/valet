@@ -54,8 +54,8 @@ class Valet
     {
         $this->files->ensureDirExists('/etc/sudoers.d');
 
-        $this->files->put('/etc/sudoers.d/valet', 'Cmnd_Alias VALET = '.BREW_PREFIX.'/bin/valet *
-%admin ALL=(root) NOPASSWD:SETENV: VALET'.PHP_EOL);
+        // TODO: fix this
+        $this->files->put('/etc/sudoers.d/valet', 'Cmnd_Alias VALET = /home/lukas/valet/valet * %admin ALL=(root) NOPASSWD:SETENV: VALET'.PHP_EOL);;
     }
 
     /**
