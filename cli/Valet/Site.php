@@ -6,10 +6,11 @@ use DateTime;
 use DomainException;
 use Illuminate\Support\Collection;
 use PhpFpm;
+use Valet\Facades\ServiceManager;
 
 class Site
 {
-    public function __construct(public PhpEnv $phpEnv, public Configuration $config, public CommandLine $cli, public Filesystem $files) {}
+    public function __construct(public PhpEnv $phpEnv, public ServiceManager $sm, public Configuration $config, public CommandLine $cli, public Filesystem $files) {}
 
     /**
      * Get the name of the site.
@@ -746,12 +747,6 @@ class Site
         }
 
         $this->cli->run("sudo update-ca-certificates");
-//        $this->cli->run(sprintf('sudo security delete-certificate -c "%s" /Library/Keychains/System.keychain', $url));
-//        $this->cli->run(sprintf('sudo security delete-certificate -c "*.%s" /Library/Keychains/System.keychain', $url));
-//        $this->cli->run(sprintf(
-//            'sudo security find-certificate -e "%s%s" -a -Z | grep SHA-1 | sudo awk \'{system("security delete-certificate -Z \'$NF\' /Library/Keychains/System.keychain")}\'',
-//            $url, '@laravel.valet'
-//        ));
 
         // If the user had isolated the PHP version for this site, swap out .sock file
         if ($phpVersion) {
@@ -887,7 +882,7 @@ class Site
             $this->addLoopbackAlias($loopback);
         }
 
-        $this->updateLoopbackPlist($loopback);
+        $this->updateLoopbackService($loopback);
     }
 
     /**
@@ -896,19 +891,19 @@ class Site
     public function removeLoopbackAlias(string $loopback): void
     {
         $this->cli->run(sprintf(
-            'sudo ifconfig lo0 -alias %s', $loopback
+            'sudo ip addr del %s dev lo', $loopback
         ));
 
         info('['.$loopback.'] loopback interface alias removed.');
     }
 
     /**
-     * Add loopback interface alias.
+     * Add loopback interface alias (Linux).
      */
     public function addLoopbackAlias(string $loopback): void
     {
         $this->cli->run(sprintf(
-            'sudo ifconfig lo0 alias %s', $loopback
+            'sudo ip addr add %s dev lo', $loopback
         ));
 
         info('['.$loopback.'] loopback interface alias added.');
@@ -917,33 +912,36 @@ class Site
     /**
      * Remove old LaunchDaemon and create a new one if necessary.
      */
-    public function updateLoopbackPlist(string $loopback): void
+    public function updateLoopbackService(string $loopback): void
     {
-        $this->removeLoopbackPlist();
+        $this->removeLoopbackService();
 
         if ($loopback !== VALET_LOOPBACK) {
             $this->files->put(
-                $this->plistPath(),
+                $this->loopbackServicePath(),
                 str_replace(
                     'VALET_LOOPBACK',
                     $loopback,
-                    $this->files->getStub('loopback.plist')
+                    $this->files->getStub('valet-loopback.service')
                 )
             );
 
-            info('['.$this->plistPath().'] persistent loopback interface alias launch daemon added.');
+            $this->sm->restartService('valet-loopback');
+
+            info('['.$this->loopbackServicePath().'] persistent loopback interface alias launch daemon added.');
         }
     }
 
     /**
-     * Remove loopback interface alias launch daemon plist file.
+     * Remove loopback interface alias launch daemon .service file.
      */
-    public function removeLoopbackPlist(): void
+    public function removeLoopbackService(): void
     {
-        if ($this->files->exists($this->plistPath())) {
-            $this->files->unlink($this->plistPath());
+        if ($this->files->exists($this->loopbackServicePath())) {
+            $this->sm->stopService('valet-loopback');
+            $this->files->unlink($this->loopbackServicePath());
 
-            info('['.$this->plistPath().'] persistent loopback interface alias launch daemon removed.');
+            info('['.$this->loopbackServicePath().'] persistent loopback interface alias launch daemon removed.');
         }
     }
 
@@ -956,7 +954,7 @@ class Site
             $this->removeLoopbackAlias($loopback);
         }
 
-        $this->removeLoopbackPlist();
+        $this->removeLoopbackService();
     }
 
     /**
@@ -978,9 +976,9 @@ class Site
     /**
      * Get the path to loopback LaunchDaemon.
      */
-    public function plistPath(): string
+    public function loopbackServicePath(): string
     {
-        return '/Library/LaunchDaemons/com.laravel.valet.loopback.plist';
+        return '/etc/systemd/system/valet-loopback.service';
     }
 
     /**

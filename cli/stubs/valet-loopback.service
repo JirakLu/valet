@@ -1,0 +1,11 @@
+[Unit]
+Description=Laravel Valet Loopback Alias
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/ip addr add VALET_LOOPBACK dev lo
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
