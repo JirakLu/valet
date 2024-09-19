@@ -34,7 +34,7 @@ class Diagnose
         'ip addr show lo',
         'sh -c \'echo "------\n/etc/nginx/valet/valet.conf\n---\n"; cat /etc/nginx/valet/valet.conf | grep -n "# valet loopback"; echo "\n------\n"\'',
         'sh -c \'for file in ~/.config/valet/dnsmasq.d/*; do echo "------\n~/.config/valet/dnsmasq.d/$(basename $file)\n---\n"; cat $file; echo "\n------\n"; done\'',
-        'sh -c \'for file in ~/.config/valet/Nginx/*; do echo "------\n~/.config/valet/nginx/$(basename $file)\n---\n"; cat $file | grep -n "# valet loopback"; echo "\n------\n"; done\'',
+        'sh -c \'for file in ~/.config/valet/Nginx/*; do echo "------\n~/.config/valet/Nginx/$(basename $file)\n---\n"; cat $file | grep -n "# valet loopback"; echo "\n------\n"; done\'',
     ];
 
     public $print;
