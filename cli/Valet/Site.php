@@ -1069,7 +1069,8 @@ class Site
             if (starts_with($siteConf, '# '.ISOLATED_PHP_VERSION)) {
                 $firstLine = explode(PHP_EOL, $siteConf)[0];
 
-                return preg_replace("/[^\d]*/", '', $firstLine); // Example output: "74" or "81"
+                // TODO: user normalize from PhpEnv
+                return preg_replace("/[^\d]*/", '', $firstLine); // Example output: "7.4.0" or "8.2.23"
             }
         }
 

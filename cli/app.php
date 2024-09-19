@@ -376,7 +376,7 @@ if (is_dir(VALET_HOME_PATH)) {
      */
     $app->command('open [domain]', function (OutputInterface $output, $domain = null) {
         $url = 'http://'.Site::domain($domain);
-        CommandLine::runAsUser('open '.escapeshellarg($url));
+        CommandLine::runAsUser('xdg-open '.escapeshellarg($url));
     })->descriptions('Open the site for the current (or specified) directory in your browser');
 
     /**
