@@ -878,9 +878,9 @@ class Site
             $this->removeLoopbackAlias($oldLoopback);
         }
 
-        if ($loopback !== VALET_LOOPBACK) {
-            $this->addLoopbackAlias($loopback);
-        }
+//        if ($loopback !== VALET_LOOPBACK) {
+//            $this->addLoopbackAlias($loopback);
+//        }
 
         $this->updateLoopbackService($loopback);
     }
