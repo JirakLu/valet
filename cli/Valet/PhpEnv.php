@@ -76,7 +76,7 @@ class PhpEnv
      */
     public function installOrFail(string $version): void
     {
-        info("Installing {$version}...");
+        info("Installing {$version}... (this might take a while)");
 
         $normalizedVersion = static::getRawPhpVersion($version);
         $this->cli->runAsUser("/home/lukas/.phpenv/bin/phpenv install ".$normalizedVersion, function ($exitCode, $errorOutput) use ($version) {
@@ -176,7 +176,7 @@ class PhpEnv
         $normalizedVersion = static::getRawPhpVersion($version);
 
         return $this->cli->runAsUser(
-            "phpenv global $normalizedVersion",
+            "/home/lukas/.phpenv/bin/phpenv global $normalizedVersion",
             function ($exitCode, $errorOutput) use ($version) {
                 output($errorOutput);
 
