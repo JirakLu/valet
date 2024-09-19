@@ -7,26 +7,13 @@ use Illuminate\Support\Collection;
 
 class PhpEnv
 {
-
-    // This is the array of PHP versions that Valet will attempt to install/configure when requested
-    // TODO: replace this with `/home/lukas/.phpenv/bin/phpenv install --list | grep -Ev "(^Available|snapshot$)"`
-    const array SUPPORTED_PHP_VERSIONS = [
-        'php@8.3.0',
-        'php@8.2.0',
-        'php@8.1.0',
-        'php@8.0.0',
-        'php@7.4.0',
-        'php@7.3.0',
-        'php@7.2.0',
-        'php@7.1.0',
-    ];
-
     // Update this LATEST and the following LIMITED array when PHP versions are released or retired
     // We specify a numbered version here even though Homebrew links its generic 'php' alias to it
     const string LATEST_PHP_VERSION = 'php@8.3.11';
 
     public function __construct(
         public CommandLine $cli,
+        public Filesystem $files,
     ) {}
 
     /**
@@ -36,11 +23,33 @@ class PhpEnv
     {
         info('Installing and configuring phpenv...');
 
+
+        $this->files->put(
+            $this->phpServicePath(),
+            str_replace(
+                'USER_HOME',
+                $_SERVER["HOME"],
+                $this->files->getStub('php@.service')
+            )
+        );
+
         // TODO: handle installing phpenv
 
         $this->cli->runAsUser("/home/lukas/.phpenv/bin/phpenv install".static::getRawPhpVersion(static::LATEST_PHP_VERSION));
         $this->cli->runAsUser("/home/lukas/.phpenv/bin/phpenv rehash");
         $this->cli->runAsUser("/home/lukas/.phpenv/bin/phpenv global".static::getRawPhpVersion(static::LATEST_PHP_VERSION));
+    }
+
+    public function uninstall(): void
+    {
+        info('Uninstalling phpenv...');
+
+        if ($this->files->exists($this->phpServicePath())) {
+            $this->files->unlink($this->phpServicePath());
+        }
+
+        $this->cli->runAsUser("rm -rf {$_SERVER['HOME']}/.phpenv");
+        // TODO: remove stuff from .zshrc or .bashrc
     }
 
     /**
@@ -100,6 +109,13 @@ class PhpEnv
         }
     }
 
+    /**
+     * Get the path to the PHP service file.
+     */
+    public function phpServicePath(): string
+    {
+        return '/etc/systemd/system/php@.service';
+    }
 
     /**
      * Get the current PHP version.
@@ -149,7 +165,7 @@ class PhpEnv
      */
     public function supportedPhpVersions(): Collection
     {
-        return collect(static::SUPPORTED_PHP_VERSIONS);
+        return collect($this->cli->runAsUser("/home/lukas/.phpenv/bin/phpenv install --list | grep -Ev \"(^Available|snapshot$)\""))->map(fn ($version) => 'php@'.$version);
     }
 
     /**

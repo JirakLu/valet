@@ -14,6 +14,7 @@ class Systemd implements ServiceManager
     public function restartService($services): void
     {
         $services = is_array($services) ? $services : func_get_args();
+        $this->cli->run("sudo systemctl daemon-reload");
 
         foreach ($services as $service) {
             $this->cli->run("sudo systemctl restart {$service}");
