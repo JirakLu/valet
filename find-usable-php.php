@@ -12,6 +12,9 @@ if (version_compare($linkedPhpVersion, $minimumPhpVersion) >= 0) {
     return;
 }
 
+return '/usr/bin/php';
+// TODO: change this?
+
 // If not, let's find it whether we have a version of PHP installed that's 8+;
 // all users that run through this code path will see Valet run more slowly
 $phps = explode(PHP_EOL, trim(shell_exec('brew list --formula | grep php')));
