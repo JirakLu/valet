@@ -520,16 +520,17 @@ class Site
      */
     public function createCa(int $caExpireInDays): void
     {
-        $caPemPath = $this->caPath('LaravelValetCASelfSigned.pem');
-        $caKeyPath = $this->caPath('LaravelValetCASelfSigned.key');
+        $caFileName = 'LaravelValetCASelfSigned';
+        $caPemPath = $this->caPath($caFileName.'.pem');
+        $caKeyPath = $this->caPath($caFileName.'.key');
 
         if ($this->files->exists($caKeyPath) && $this->files->exists($caPemPath)) {
 
             $isTrusted = $this->cli->run(sprintf(
-                'openssl verify "%s"', $caPemPath
+                'openssl verify -x509_strict "%s"', $caPemPath
             ));
 
-            if (!str_contains($isTrusted, '...certificate verification successful.')) {
+            if (!str_contains($isTrusted, ': OK')) {
                 $this->trustCa($caPemPath);
             }
 
@@ -547,8 +548,8 @@ class Site
         }
 
         $this->cli->run(sprintf(
-            'sudo rm -f /etc/ssl/certs/%s',
-            $cName
+            'sudo trust anchor --remove "/etc/ca-certificates/trust-source/%s.p11-kit"',
+            $caFileName
         ));
 
         $this->cli->runAsUser(sprintf(
@@ -609,7 +610,7 @@ class Site
         ));
 
         // If cert could not be created using runAsUser(), use run().
-        if (strpos($result, 'Permission denied') !== false) {
+        if (str_contains($result, 'Permission denied')) {
             $this->cli->run(sprintf(
                 'openssl x509 -req -sha256 -days %s -CA "%s" -CAkey "%s" %s -in "%s" -out "%s" -extensions v3_req -extfile "%s"',
                 $caExpireInDays, $caPemPath, $caKeyPath, $caSrlParam, $csrPath, $crtPath, $confPath
@@ -643,22 +644,12 @@ class Site
     {
         info('Trusting Laravel Valet Certificate Authority...');
         $result = $this->cli->run(sprintf(
-            'sudo cp "%s" /usr/share/ca-certificates/trust-source/anchors/ && sudo update-ca-trust',
+            "sudo trust anchor --store %s",
             $caPemPath
         ));
         if ($result) {
             throw new DomainException('The Certificate Authority must be trusted. Please run the command again.');
         }
-    }
-
-    /**
-     * Trust the given certificate file in the Mac Keychain.
-     */
-    public function trustCertificate(string $crtPath): void
-    {
-        $this->cli->run(sprintf(
-            'sudo cp "%s" /usr/share/ca-certificates/trust-source/anchors/ && sudo update-ca-trust', $crtPath
-        ));
     }
 
     /**
@@ -754,12 +745,13 @@ class Site
             $this->files->unlink($this->certificatesPath($url, 'crt'));
         }
 
-        $this->cli->run(sprintf('sudo security delete-certificate -c "%s" /Library/Keychains/System.keychain', $url));
-        $this->cli->run(sprintf('sudo security delete-certificate -c "*.%s" /Library/Keychains/System.keychain', $url));
-        $this->cli->run(sprintf(
-            'sudo security find-certificate -e "%s%s" -a -Z | grep SHA-1 | sudo awk \'{system("security delete-certificate -Z \'$NF\' /Library/Keychains/System.keychain")}\'',
-            $url, '@laravel.valet'
-        ));
+        $this->cli->run("sudo update-ca-certificates");
+//        $this->cli->run(sprintf('sudo security delete-certificate -c "%s" /Library/Keychains/System.keychain', $url));
+//        $this->cli->run(sprintf('sudo security delete-certificate -c "*.%s" /Library/Keychains/System.keychain', $url));
+//        $this->cli->run(sprintf(
+//            'sudo security find-certificate -e "%s%s" -a -Z | grep SHA-1 | sudo awk \'{system("security delete-certificate -Z \'$NF\' /Library/Keychains/System.keychain")}\'',
+//            $url, '@laravel.valet'
+//        ));
 
         // If the user had isolated the PHP version for this site, swap out .sock file
         if ($phpVersion) {

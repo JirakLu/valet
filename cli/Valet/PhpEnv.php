@@ -9,6 +9,7 @@ class PhpEnv
 {
 
     // This is the array of PHP versions that Valet will attempt to install/configure when requested
+    // TODO: replace this with `/home/lukas/.phpenv/bin/phpenv install --list | grep -Ev "(^Available|snapshot$)"`
     const array SUPPORTED_PHP_VERSIONS = [
         'php@8.3.0',
         'php@8.2.0',
