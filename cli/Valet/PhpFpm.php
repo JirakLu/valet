@@ -320,7 +320,7 @@ class PhpFpm
                     return $this->normalizePhpVersion(str_replace(['valet', '.sock'], '', $sock));
                 }
             }
-        })->filter()->unique()->values()->toArray();
+        })->merge($this->phpEnv->phpVersion())->filter()->unique()->values()->toArray();
     }
 
 }
