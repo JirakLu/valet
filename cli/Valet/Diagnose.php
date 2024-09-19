@@ -69,7 +69,8 @@ class Diagnose
 
         $this->files->put('valet_diagnostics.txt', $output);
 
-        $this->cli->run('pbcopy < valet_diagnostics.txt');
+        // TODO: check this
+        $this->cli->run('xclip < valet_diagnostics.txt');
 
         $this->files->unlink('valet_diagnostics.txt');
 
