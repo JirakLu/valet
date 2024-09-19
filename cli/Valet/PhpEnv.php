@@ -186,6 +186,23 @@ class PhpEnv
     }
 
     /**
+     * Extract PHP executable path from PHP Version.
+     */
+    public function getPhpExecutablePath(?string $phpVersion = null): string
+    {
+        if (! $phpVersion) {
+            return '/usr/bin/php';
+        }
+
+        $executable = $_SERVER['HOME'].'/.phpenv/versions/'.static::getRawPhpVersion($phpVersion).'/bin/php';
+        if ($this->files->exists($executable)) {
+            return $executable;
+        }
+
+        return '/usr/bin/php';
+    }
+
+    /**
      * Check if phpenv is using latest PHP version.
      */
     public function isUsingLatestPhp(): bool

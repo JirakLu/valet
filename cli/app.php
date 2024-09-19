@@ -710,7 +710,7 @@ if (is_dir(VALET_HOME_PATH)) {
             $phpVersion = Site::phpRcVersion($site ?: basename(getcwd()));
         }
 
-        return output(Brew::getPhpExecutablePath($phpVersion));
+        return output(PhpEnv::getPhpExecutablePath($phpVersion));
     })->descriptions('Get the PHP executable path for a given site', [
         'site' => 'The site to get the PHP executable path for',
     ]);
