@@ -70,7 +70,7 @@ class Diagnose
         $this->files->put('valet_diagnostics.txt', $output);
 
         // TODO: check this
-        $this->cli->run('xclip < valet_diagnostics.txt');
+        $this->cli->run('xclip -sel clip < valet_diagnostics.txt');
 
         $this->files->unlink('valet_diagnostics.txt');
 
