@@ -275,6 +275,11 @@ class PhpFpm
     public function validateRequestedVersion(string $version): string
     {
         $version = $this->normalizePhpVersion($version);
+        $supportedVersions = $this->phpEnv->supportedPhpVersions();
+        foreach ($supportedVersions as $supportedVersion) {
+            output($supportedVersion);
+        }
+
 
         if (! $this->phpEnv->supportedPhpVersions()->contains($version)) {
             throw new DomainException("Valet doesn't support PHP version: {$version} (try something like 'php@8.1.0' instead)");
