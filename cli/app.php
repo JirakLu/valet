@@ -626,7 +626,7 @@ if (is_dir(VALET_HOME_PATH)) {
     $app->command('use [phpVersion] [--force]', function (OutputInterface $output, $phpVersion, $force) {
         if (! $phpVersion) {
             $site = basename(getcwd());
-            $linkedVersion = Brew::linkedPhp();
+            $linkedVersion = PhpEnv::phpVersion();
 
             if ($phpVersion = Site::phpRcVersion($site, getcwd())) {
                 info("Found '{$site}/.valetrc' or '{$site}/.valetphprc' specifying version: {$phpVersion}");

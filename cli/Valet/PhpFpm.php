@@ -118,7 +118,7 @@ class PhpFpm
         info('Stopping phpfpm...');
         call_user_func_array(
             [$this->sm, 'stopService'],
-            PhpEnv::SUPPORTED_PHP_VERSIONS
+            $this->phpEnv->supportedPhpVersions()->toArray()
         );
     }
 
