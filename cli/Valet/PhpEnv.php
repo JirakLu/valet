@@ -165,7 +165,7 @@ class PhpEnv
      */
     public function supportedPhpVersions(): Collection
     {
-        return collect($this->cli->runAsUser("/home/lukas/.phpenv/bin/phpenv install --list | grep -Ev \"(^Available|snapshot$)\""))->map(fn ($version) => 'php@'.trim($version));
+        return collect(explode("\n", $this->cli->runAsUser("/home/lukas/.phpenv/bin/phpenv install --list | grep -Ev \"(^Available|snapshot$)\"")))->map(fn ($version) => 'php@'.trim($version));
     }
 
     /**
