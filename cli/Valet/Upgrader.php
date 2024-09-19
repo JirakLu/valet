@@ -2,9 +2,6 @@
 
 namespace Valet;
 
-use Configuration;
-use Site;
-
 class Upgrader
 {
     public function __construct(public Filesystem $files) {}
