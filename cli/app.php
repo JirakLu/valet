@@ -646,6 +646,7 @@ if (is_dir(VALET_HOME_PATH)) {
             }
         }
 
+        $phpVersion = $phpVersion === 'php' ? \Valet\PhpEnv::LATEST_PHP_VERSION : $phpVersion;
         PhpFpm::useVersion($phpVersion, $force);
     })->descriptions('Change the version of PHP used by Valet', [
         'phpVersion' => 'The PHP version you want to use; e.g. php@8.2',
