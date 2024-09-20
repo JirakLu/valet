@@ -2,18 +2,15 @@
 
 namespace Valet;
 
+use JsonException;
 use Valet\Facades\PackageManager;
 use Valet\Facades\ServiceManager;
 
 class Status
 {
-    public $brewServicesUserOutput;
+    public array $debugInstructions = [];
 
-    public $brewServicesRootOutput;
-
-    public $debugInstructions = [];
-
-    public function __construct(public Configuration $config, public PackageManager $pm, public ServiceManager $sm, public PhpEnv $phpEnv, public CommandLine $cli, public Filesystem $files) {}
+    public function __construct(public Configuration $config, public PackageManager $pm, public ServiceManager $sm, public PhpEnv $phpEnv, public PhpFpm $phpFpm, public CommandLine $cli, public Filesystem $files) {}
 
     /**
      * Check the status of the entire Valet ecosystem and return a status boolean
@@ -45,8 +42,7 @@ class Status
     public function checks(): array
     {
         $phpVersion = $this->phpEnv->phpVersion();
-
-        return [
+        $checks = [
             [
                 'description' => 'Is Valet fully installed?',
                 'check' => function () {
@@ -69,7 +65,7 @@ class Status
                         }
 
                         return true;
-                    } catch (\JsonException $e) {
+                    } catch (JsonException $e) {
                         return false;
                     }
                 },
@@ -117,7 +113,6 @@ class Status
                 },
                 'debug' => 'Run `valet restart`.',
             ],
-            // TODO: add check for phpenv installation
             [
                 'description' => 'Is valet.sock present?',
                 'check' => function () {
@@ -126,6 +121,33 @@ class Status
                 'debug' => 'Run `valet install`.',
             ],
         ];
+
+        // check all utilized php services
+        foreach ($this->phpFpm->utilizedPhpVersions() as $phpService) {
+            $checks[] = [
+                'description' => 'Is PHP '.$phpService.' installed?',
+                'check' => function () use ($phpService) {
+                    return $this->pm->installed($phpService);
+                },
+                'debug' => 'Run `valet install`.',
+            ];
+            $checks[] = [
+                'description' => 'Is PHP '.$phpService.' running?',
+                'check' => function () use ($phpService) {
+                    return $this->sm->isServiceRunning($phpService);
+                },
+                'debug' => 'Run `valet restart`.',
+            ];
+            $checks[] = [
+                'description' => 'Is '.$phpService.'.sock present?',
+                'check' => function () use ($phpService) {
+                    return $this->files->exists(VALET_HOME_PATH.'/'.$phpService.'.sock');
+                },
+                'debug' => 'Run `valet install`.',
+            ];
+        }
+
+        return $checks;
     }
 
     public function valetInstalled(): bool

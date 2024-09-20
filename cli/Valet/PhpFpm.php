@@ -198,7 +198,7 @@ class PhpFpm
     {
         $site = $this->site->getSiteUrl($directory);
 
-        $oldCustomPhpVersion = $this->site->customPhpVersion($site); // Example output: "740"
+        $oldCustomPhpVersion = $this->site->customPhpVersion($site); // Example output: "php@8.3.11"
 
         $this->site->removeIsolation($site);
         $this->stopIfUnused($oldCustomPhpVersion);

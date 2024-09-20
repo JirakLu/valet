@@ -5,6 +5,8 @@ namespace Valet;
 use DateTime;
 use DomainException;
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
+use JsonException;
 use PhpFpm;
 use Valet\Facades\ServiceManager;
 
@@ -479,7 +481,7 @@ class Site
         // Create the CA if it doesn't exist.
         // If the user cancels the trust operation, the old certificate will not be removed.
         $this->files->ensureDirExists($this->caPath(), user());
-        $caExpireInDate = (new \DateTime)->diff(new \DateTime("+{$caExpireInYears} years"));
+        $caExpireInDate = (new DateTime)->diff(new DateTime("+{$caExpireInYears} years"));
         $this->createCa($caExpireInDate->format('%a'));
 
         $this->unsecure($url);
@@ -795,11 +797,13 @@ class Site
      *
      * @param  string  $url  The domain name to serve
      * @param  string  $host  The URL to proxy to, eg: http://127.0.0.1:8080
+     *
+     * @throws JsonException
      */
     public function proxyCreate(string $url, string $host, bool $secure = false): void
     {
         if (! preg_match('~^https?://.*$~', $host)) {
-            throw new \InvalidArgumentException(sprintf('"%s" is not a valid URL', $host));
+            throw new InvalidArgumentException(sprintf('"%s" is not a valid URL', $host));
         }
 
         $tld = $this->config->read()['tld'];
