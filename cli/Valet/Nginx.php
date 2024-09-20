@@ -9,7 +9,7 @@ use Valet\Facades\ServiceManager;
 
 class Nginx
 {
-    const string NGINX_CONF = '/etc/nginx/nginx.conf';
+    const NGINX_CONF = '/etc/nginx/nginx.conf';
 
     public function __construct(
         public PackageManager $pm,

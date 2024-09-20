@@ -9,7 +9,7 @@ class PhpEnv
 {
     // Update this LATEST and the following LIMITED array when PHP versions are released or retired
     // We specify a numbered version here even though Homebrew links its generic 'php' alias to it
-    const string LATEST_PHP_VERSION = 'php@8.3.11';
+    const LATEST_PHP_VERSION = 'php@8.3.11';
 
     public function __construct(
         public CommandLine $cli,
@@ -79,7 +79,7 @@ class PhpEnv
         info("Installing {$version}... (this might take a while)");
 
         $normalizedVersion = static::getRawPhpVersion($version);
-        $this->cli->runAsUser("/home/lukas/.phpenv/bin/phpenv install ".$normalizedVersion, function ($exitCode, $errorOutput) use ($version) {
+        $this->cli->runAsUser("/home/lukas/.phpenv/bin/phpenv install -i development ".$normalizedVersion, function ($exitCode, $errorOutput) use ($version) {
             output($errorOutput);
 
             throw new DomainException('PHP version ['.$version.'] could not be installed.');

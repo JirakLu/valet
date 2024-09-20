@@ -4,6 +4,7 @@ namespace Valet;
 
 use DomainException;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Container\Container;
 use Valet\Facades\PackageManager;
 use Valet\Facades\ServiceManager;
@@ -12,7 +13,7 @@ use Valet\ServiceManagers\Systemd;
 
 class Valet
 {
-    public $valetBin = BREW_PREFIX.'/bin/valet';
+    public string $valetBin = '/usr/bin/valet';
 
     public function __construct(public CommandLine $cli, public Filesystem $files) {}
 
@@ -37,10 +38,11 @@ class Valet
     /**
      * Determine if this is the latest version of Valet.
      *
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws GuzzleException
      */
     public function onLatestVersion(string $currentVersion): bool
     {
+        // TODO: change this
         $url = 'https://api.github.com/repos/laravel/valet/releases/latest';
         $response = json_decode((new Client)->get($url)->getBody());
 

@@ -1059,7 +1059,7 @@ class Site
     }
 
     /**
-     * Extract PHP version of exising nginx conifg.
+     * Extract PHP version of exising nginx config.
      */
     public function customPhpVersion(string $url): ?string
     {
