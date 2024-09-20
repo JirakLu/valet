@@ -106,40 +106,26 @@ class Status
                 },
                 'debug' => 'Run `valet install`.',
             ],
-            [
-                'description' => 'Is linked PHP ('.$phpVersion.') running?',
-                'check' => function () use ($phpVersion) {
-                    return $this->sm->isServiceRunning($phpVersion);
-                },
-                'debug' => 'Run `valet restart`.',
-            ],
-            [
-                'description' => 'Is valet.sock present?',
-                'check' => function () {
-                    return $this->files->exists(VALET_HOME_PATH.'/valet.sock');
-                },
-                'debug' => 'Run `valet install`.',
-            ],
         ];
 
         // check all utilized php services
         foreach ($this->phpFpm->utilizedPhpVersions() as $phpService) {
             $checks[] = [
-                'description' => 'Is PHP '.$phpService.' installed?',
+                'description' => 'Is PHP ('.$phpService.') installed?',
                 'check' => function () use ($phpService) {
                     return $this->pm->installed($phpService);
                 },
                 'debug' => 'Run `valet install`.',
             ];
             $checks[] = [
-                'description' => 'Is PHP '.$phpService.' running?',
+                'description' => 'Is PHP ('.$phpService.') running?',
                 'check' => function () use ($phpService) {
                     return $this->sm->isServiceRunning($phpService);
                 },
                 'debug' => 'Run `valet restart`.',
             ];
             $checks[] = [
-                'description' => 'Is '.$phpService.'.sock present?',
+                'description' => 'Is ('.$phpService.') valet.sock present?',
                 'check' => function () use ($phpService) {
                     if ($phpService === $this->phpEnv->phpVersion()) {
                         return $this->files->exists(VALET_HOME_PATH.'/valet.sock');
