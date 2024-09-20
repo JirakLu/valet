@@ -141,7 +141,11 @@ class Status
             $checks[] = [
                 'description' => 'Is '.$phpService.'.sock present?',
                 'check' => function () use ($phpService) {
-                    return $this->files->exists(VALET_HOME_PATH.'/'.$phpService.'.sock');
+                    if ($phpService === $this->phpEnv->phpVersion()) {
+                        return $this->files->exists(VALET_HOME_PATH.'/valet.sock');
+                    }
+
+                    return $this->files->exists(VALET_HOME_PATH.'/'.PhpEnv::getRawPhpVersion($phpService).'.sock');
                 },
                 'debug' => 'Run `valet install`.',
             ];
