@@ -125,7 +125,7 @@ class Status
                 'debug' => 'Run `valet restart`.',
             ];
             $checks[] = [
-                'description' => 'Is ('.$phpService.') valet.sock present?',
+                'description' => 'Is valet.'.PhpEnv::getRawPhpVersion($phpService).'sock present?',
                 'check' => function () use ($phpService) {
                     return $this->files->exists(VALET_HOME_PATH.'/valet'.PhpEnv::getRawPhpVersion($phpService).'.sock');
                 },
