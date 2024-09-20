@@ -8,13 +8,12 @@ use Valet\Facades\ServiceManager;
 
 class Systemd implements ServiceManager
 {
-
     public function __construct(public CommandLine $cli) {}
 
     public function restartService($services): void
     {
         $services = is_array($services) ? $services : func_get_args();
-        $this->cli->run("sudo systemctl daemon-reload");
+        $this->cli->run('sudo systemctl daemon-reload');
 
         foreach ($services as $service) {
             $this->cli->run("sudo systemctl restart {$service}");
@@ -47,6 +46,6 @@ class Systemd implements ServiceManager
 
     public function isAvailable(): bool
     {
-        return $this->cli->run('command -v systemctl', ) !== '';
+        return $this->cli->run('command -v systemctl') !== '';
     }
 }

@@ -39,6 +39,7 @@ class DnsMasq
 
     /**
      * Forcefully uninstall dnsmasq.
+     *
      * @throws JsonException
      */
     public function uninstall(): void
@@ -76,7 +77,7 @@ class DnsMasq
         // set primary config to look for configs in /etc/dnsmasq.d/*.conf
         $contents = $this->files->get($this->dnsmasqMasterConfigFile);
         // ensure the line we need to use is present, and uncomment it if needed
-        if (!str_contains($contents, 'conf-dir=/etc/dnsmasq.d/,*.conf')) {
+        if (! str_contains($contents, 'conf-dir=/etc/dnsmasq.d/,*.conf')) {
             $contents .= PHP_EOL.'conf-dir=/etc/dnsmasq.d/,*.conf'.PHP_EOL;
         }
         $contents = str_replace('#conf-dir=/etc/dnsmasq.d/,*.conf', 'conf-dir=/etc/dnsmasq.d/,*.conf', $contents);

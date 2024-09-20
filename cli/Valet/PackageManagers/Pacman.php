@@ -5,11 +5,12 @@ namespace Valet\PackageManagers;
 use DomainException;
 use Valet\CommandLine;
 use Valet\Facades\PackageManager;
+
 use function Valet\info;
 use function Valet\output;
 
-class Pacman implements PackageManager {
-
+class Pacman implements PackageManager
+{
     public function __construct(public CommandLine $cli) {}
 
     /**
@@ -55,7 +56,7 @@ class Pacman implements PackageManager {
      */
     public function nginxServiceName(): string
     {
-        return "nginx";
+        return 'nginx';
     }
 
     /**

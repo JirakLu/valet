@@ -4,7 +4,6 @@ namespace Valet;
 
 class Server
 {
-
     public function __construct(public array $config) {}
 
     /**

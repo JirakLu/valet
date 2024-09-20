@@ -26,9 +26,9 @@ class Diagnose
         'openssl ciphers',
         'sudo nginx -t',
         // TODO: add some checks for phpenv & phpfpm
-//        'which -a php-fpm',
-//        'php-fpm -v',
-//        'sudo php-fpm -y '.PHP_SYSCONFDIR.'/php-fpm.conf --test',
+        //        'which -a php-fpm',
+        //        'php-fpm -v',
+        //        'sudo php-fpm -y '.PHP_SYSCONFDIR.'/php-fpm.conf --test',
         'ls -aln /etc/resolv.conf',
         'cat /etc/resolv.conf',
         'ip addr show lo',

@@ -24,7 +24,7 @@ class Upgrader
     {
         try {
             // TODO: fix this
-//            Configuration::prune();
+            //            Configuration::prune();
         } catch (\JsonException $e) {
             warning('Invalid configuration file at '.Configuration::path().'.');
             exit;
@@ -37,7 +37,7 @@ class Upgrader
     public function pruneSymbolicLinks(): void
     {
         // TODO: fix this
-//        Site::pruneLinks();
+        //        Site::pruneLinks();
     }
 
     /**

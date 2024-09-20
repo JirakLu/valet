@@ -58,7 +58,7 @@ class Valet
 
         // TODO: fix this
         $this->files->put('/etc/sudoers.d/valet', 'Cmnd_Alias VALET = /home/lukas/valet/valet *
-        %admin ALL=(root) NOPASSWD:SETENV: VALET'.PHP_EOL);;
+        %admin ALL=(root) NOPASSWD:SETENV: VALET'.PHP_EOL);
     }
 
     /**
@@ -173,7 +173,7 @@ You might also want to investigate your global Composer configs. Helpful command
         ])->first(static function ($pm) {
             return resolve($pm)->isAvailable();
         }, static function () {
-            throw new DomainException("No compatible package manager found.");
+            throw new DomainException('No compatible package manager found.');
         });
     }
 
@@ -195,7 +195,7 @@ You might also want to investigate your global Composer configs. Helpful command
         ])->first(static function ($pm) {
             return resolve($pm)->isAvailable();
         }, static function () {
-            throw new DomainException("No compatible service manager found.");
+            throw new DomainException('No compatible service manager found.');
         });
     }
 }

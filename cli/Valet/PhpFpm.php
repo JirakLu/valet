@@ -213,7 +213,7 @@ class PhpFpm
     public function isolatedDirectories(): Collection
     {
         return $this->nginx->configuredSites()->filter(function ($item) {
-            return str_contains($this->files->get(VALET_HOME_PATH . '/Nginx/' . $item), ISOLATED_PHP_VERSION);
+            return str_contains($this->files->get(VALET_HOME_PATH.'/Nginx/'.$item), ISOLATED_PHP_VERSION);
         })->map(function ($item) {
             return ['url' => $item, 'version' => $this->normalizePhpVersion($this->site->customPhpVersion($item))];
         });
@@ -322,5 +322,4 @@ class PhpFpm
             }
         })->merge($this->phpEnv->phpVersion())->filter()->unique()->values()->toArray();
     }
-
 }

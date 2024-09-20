@@ -531,7 +531,7 @@ class Site
                 'openssl verify -x509_strict "%s"', $caPemPath
             ));
 
-            if (!str_contains($isTrusted, ': OK')) {
+            if (! str_contains($isTrusted, ': OK')) {
                 $this->trustCa($caPemPath);
             }
 
@@ -645,7 +645,7 @@ class Site
     {
         info('Trusting Laravel Valet Certificate Authority...');
         $result = $this->cli->run(sprintf(
-            "sudo trust anchor --store %s",
+            'sudo trust anchor --store %s',
             $caPemPath
         ));
         if ($result) {
@@ -746,7 +746,7 @@ class Site
             $this->files->unlink($this->certificatesPath($url, 'crt'));
         }
 
-        $this->cli->run("sudo update-ca-certificates");
+        $this->cli->run('sudo update-ca-certificates');
 
         // If the user had isolated the PHP version for this site, swap out .sock file
         if ($phpVersion) {
@@ -878,9 +878,9 @@ class Site
             $this->removeLoopbackAlias($oldLoopback);
         }
 
-//        if ($loopback !== VALET_LOOPBACK) {
-//            $this->addLoopbackAlias($loopback);
-//        }
+        //        if ($loopback !== VALET_LOOPBACK) {
+        //            $this->addLoopbackAlias($loopback);
+        //        }
 
         $this->updateLoopbackService($loopback);
     }
