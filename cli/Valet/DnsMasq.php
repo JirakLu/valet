@@ -60,7 +60,7 @@ class DnsMasq
     }
 
     /**
-     * Tell Homebrew to restart dnsmasq.
+     * Tell service manager to restart dnsmasq.
      */
     public function restart(): void
     {

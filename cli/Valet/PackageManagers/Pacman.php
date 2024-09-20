@@ -52,7 +52,7 @@ class Pacman implements PackageManager
     }
 
     /**
-     * Return name of the nginx service installed via Homebrew.
+     * Return name of the nginx service installed via package manager.
      */
     public function nginxServiceName(): string
     {
