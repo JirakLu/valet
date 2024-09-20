@@ -30,8 +30,8 @@ class PhpEnv
             )
         );
 
-        $this->cli->runAsUser("git clone git@github.com:phpenv/phpenv.git {$_SERVER['HOME']}/.phpenv");
-        $this->cli->runAsUser("git clone git@github.com:php-build/php-build.git {$_SERVER['HOME']}/.phpenv/plugins/php-build");
+        $this->cli->runAsUser("git clone https://github.com/phpenv/phpenv.git {$_SERVER['HOME']}/.phpenv");
+        $this->cli->runAsUser("git clone https://github.com/php-build/php-build {$_SERVER['HOME']}/.phpenv/plugins/php-build");
 
         $this->use(static::LATEST_PHP_VERSION);
     }
@@ -77,6 +77,7 @@ class PhpEnv
         info("Installing {$version}... (this might take a while)");
 
         $this->runPhpEnv('install -i development '.static::getRawPhpVersion($version), function ($exitCode, $errorOutput) use ($version) {
+            $this->runPhpEnv('uninstall '.static::getRawPhpVersion($version));
             output($errorOutput);
 
             throw new DomainException('PHP version ['.$version.'] could not be installed.');

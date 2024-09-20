@@ -24,7 +24,7 @@ class Valet
     {
         $this->unlinkFromUsersBin();
 
-        $this->cli->runAsUser('ln -s "'.realpath(__DIR__.'/../../valet').'" '.$this->valetBin);
+        $this->cli->runAsUser('sudo ln -s "'.realpath(__DIR__.'/../../valet').'" '.$this->valetBin);
     }
 
     /**
@@ -32,7 +32,7 @@ class Valet
      */
     public function unlinkFromUsersBin(): void
     {
-        $this->cli->quietlyAsUser('rm '.$this->valetBin);
+        $this->cli->quietlyAsUser('sudo rm '.$this->valetBin);
     }
 
     /**
