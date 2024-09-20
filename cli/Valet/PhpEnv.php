@@ -9,6 +9,8 @@ class PhpEnv
 {
     const LATEST_PHP_VERSION = 'php@8.3.11';
 
+    const EXTENSIONS = '';
+
     public function __construct(
         public CommandLine $cli,
         public Filesystem $files,
@@ -91,8 +93,6 @@ class PhpEnv
     public function hasInstalledPhp(): bool
     {
         $output = $this->runPhpEnv('versions --bare');
-        // TODO: investigate
-        $output = str_replace('sudo: phpenv: command not found', '', $output);
 
         return ! empty(trim($output));
     }
@@ -190,9 +190,7 @@ class PhpEnv
      */
     public function getPhpExecutablePath(?string $phpVersion = null): string
     {
-        if (! $phpVersion) {
-            return '/usr/bin/php';
-        }
+        $phpVersion = $phpVersion ?? $this->phpVersion();
 
         $executable = $_SERVER['HOME'].'/.phpenv/versions/'.static::getRawPhpVersion($phpVersion).'/bin/php';
         if ($this->files->exists($executable)) {

@@ -395,7 +395,7 @@ if (is_dir(VALET_HOME_PATH)) {
         if ($tool && in_array($tool, $share_tools) && class_exists($tool)) {
             try {
                 output($tool::currentTunnelUrl(Site::domain($domain)));
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 warning($e->getMessage());
             }
         } else {
@@ -614,8 +614,8 @@ if (is_dir(VALET_HOME_PATH)) {
 
         Valet::createSudoersEntry();
 
-        info('Sudoers entries have been added for Brew and Valet.');
-    })->descriptions('Add sudoers files for Brew and Valet to make Valet commands run without passwords', [
+        info('Sudoers entries have been added for Valet.');
+    })->descriptions('Add sudoers files for Valet to make Valet commands run without passwords', [
         '--off' => 'Remove the sudoers files so normal sudo password prompts are required.',
     ]);
 

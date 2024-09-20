@@ -56,9 +56,8 @@ class Valet
     {
         $this->files->ensureDirExists('/etc/sudoers.d');
 
-        // TODO: fix this
-        $this->files->put('/etc/sudoers.d/valet', 'Cmnd_Alias VALET = /home/lukas/valet/valet *
-        %admin ALL=(root) NOPASSWD:SETENV: VALET'.PHP_EOL);
+        $this->files->put('/etc/sudoers.d/valet', 'Cmnd_Alias VALET = /usr/bin/valet *
+%wheel ALL=(root) NOPASSWD:SETENV: VALET'.PHP_EOL);
     }
 
     /**
@@ -66,7 +65,7 @@ class Valet
      */
     public function removeSudoersEntry(): void
     {
-        $this->cli->quietly('rm /etc/sudoers.d/valet');
+        $this->cli->quietly('sudo rm /etc/sudoers.d/valet');
     }
 
     /**
