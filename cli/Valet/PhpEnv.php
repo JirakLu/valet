@@ -7,8 +7,6 @@ use Illuminate\Support\Collection;
 
 class PhpEnv
 {
-    // Update this LATEST and the following LIMITED array when PHP versions are released or retired
-    // We specify a numbered version here even though Homebrew links its generic 'php' alias to it
     const LATEST_PHP_VERSION = 'php@8.3.11';
 
     public function __construct(
@@ -32,13 +30,15 @@ class PhpEnv
             )
         );
 
-        // TODO: handle installing phpenv
+        $this->cli->runAsUser("git clone git@github.com:phpenv/phpenv.git ${$_SERVER['HOME']}/.phpenv");
+        $this->cli->runAsUser("git clone git@github.com:php-build/php-build.git ${$_SERVER['HOME']}/.phpenv/plugins/php-build");
 
-        $this->cli->runAsUser('/home/lukas/.phpenv/bin/phpenv install'.static::getRawPhpVersion(static::LATEST_PHP_VERSION));
-        $this->cli->runAsUser('/home/lukas/.phpenv/bin/phpenv rehash');
-        $this->cli->runAsUser('/home/lukas/.phpenv/bin/phpenv global'.static::getRawPhpVersion(static::LATEST_PHP_VERSION));
+        $this->use(static::LATEST_PHP_VERSION);
     }
 
+    /**
+     * Uninstall PhpEnv.
+     */
     public function uninstall(): void
     {
         info('Uninstalling phpenv...');
@@ -48,7 +48,6 @@ class PhpEnv
         }
 
         $this->cli->runAsUser("rm -rf {$_SERVER['HOME']}/.phpenv");
-        // TODO: remove stuff from .zshrc or .bashrc
     }
 
     /**
@@ -67,9 +66,7 @@ class PhpEnv
      */
     public function installed(string $version): bool
     {
-        $normalizedVersion = static::getRawPhpVersion($version);
-
-        return str_contains($this->cli->runAsUser('/home/lukas/.phpenv/bin/phpenv versions --bare'), $normalizedVersion);
+        return str_contains($this->runPhpEnv('versions --bare'), static::getRawPhpVersion($version));
     }
 
     /**
@@ -79,12 +76,12 @@ class PhpEnv
     {
         info("Installing {$version}... (this might take a while)");
 
-        $normalizedVersion = static::getRawPhpVersion($version);
-        $this->cli->runAsUser('/home/lukas/.phpenv/bin/phpenv install -i development '.$normalizedVersion, function ($exitCode, $errorOutput) use ($version) {
+        $this->runPhpEnv('install -i development '.static::getRawPhpVersion($version), function ($exitCode, $errorOutput) use ($version) {
             output($errorOutput);
 
             throw new DomainException('PHP version ['.$version.'] could not be installed.');
         });
+        $this->runPhpEnv('rehash');
     }
 
     /**
@@ -92,7 +89,7 @@ class PhpEnv
      */
     public function hasInstalledPhp(): bool
     {
-        $output = $this->cli->runAsUser('/home/lukas/.phpenv/bin/phpenv versions --bare');
+        $output = $this->runPhpEnv('versions --bare');
         // TODO: investigate
         $output = str_replace('sudo: phpenv: command not found', '', $output);
 
@@ -125,7 +122,7 @@ class PhpEnv
      */
     public function phpVersion(): string
     {
-        return trim('php@'.$this->cli->runAsUser('/home/lukas/.phpenv/bin/phpenv version-name'));
+        return trim('php@'.$this->runPhpEnv('version-name'));
     }
 
     /**
@@ -133,7 +130,7 @@ class PhpEnv
      */
     public function phpVersions(): Collection
     {
-        return collect(explode("\n", $this->cli->runAsUser('/home/lukas/.phpenv/bin/phpenv versions --bare')))->map(fn ($version) => 'php@'.$version);
+        return collect(explode("\n", $this->runPhpEnv('versions --bare')))->map(fn ($version) => 'php@'.$version);
     }
 
     /**
@@ -143,11 +140,12 @@ class PhpEnv
     {
         info("Uninstalling {$version}...");
 
-        $this->cli->runAsUser('/home/lukas/.phpenv/bin/phpenv uninstall '.$version, function ($exitCode, $errorOutput) use ($version) {
+        $this->runPhpEnv('uninstall '.$version, function ($exitCode, $errorOutput) use ($version) {
             output($errorOutput);
 
             throw new DomainException('PHP version ['.$version.'] could not be uninstalled.');
         });
+        $this->runPhpEnv('rehash');
     }
 
     /**
@@ -167,7 +165,7 @@ class PhpEnv
      */
     public function supportedPhpVersions(): Collection
     {
-        return collect(explode("\n", $this->cli->runAsUser('/home/lukas/.phpenv/bin/phpenv install --list | grep -Ev "(^Available|snapshot$)"')))->map(fn ($version) => 'php@'.trim($version));
+        return collect(explode("\n", $this->runPhpEnv('install --list | grep -Ev "(^Available|snapshot$)"')))->map(fn ($version) => 'php@'.trim($version));
     }
 
     /**
@@ -175,10 +173,9 @@ class PhpEnv
      */
     public function use(string $version): string
     {
-        $normalizedVersion = static::getRawPhpVersion($version);
+        $this->ensureInstalled($version);
 
-        return $this->cli->runAsUser(
-            "/home/lukas/.phpenv/bin/phpenv global $normalizedVersion",
+        return $this->runPhpEnv('global '.static::getRawPhpVersion($version),
             function ($exitCode, $errorOutput) use ($version) {
                 output($errorOutput);
 
@@ -202,6 +199,14 @@ class PhpEnv
         }
 
         return '/usr/bin/php';
+    }
+
+    /**
+     * Runs phpenv command
+     */
+    public function runPhpEnv(string $command, ?callable $onError = null): string
+    {
+        return $this->cli->runAsUser($_SERVER['HOME'].'/.phpenv/bin/phpenv '.$command, $onError);
     }
 
     /**
