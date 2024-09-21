@@ -10,7 +10,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Valet\Drivers\ValetDriver;
-
 use function Valet\info;
 use function Valet\output;
 use function Valet\table;
@@ -45,6 +44,7 @@ $dispatcher->addListener(
         writer($event->getOutput());
     });
 
+Valet::environmentSetup();
 Upgrader::onEveryRun();
 
 $share_tools = [
@@ -52,8 +52,6 @@ $share_tools = [
     'expose',
     'ngrok',
 ];
-
-Valet::environmentSetup();
 
 /**
  * Install Valet and any required services.
