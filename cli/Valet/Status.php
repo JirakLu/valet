@@ -113,7 +113,7 @@ class Status
             $checks[] = [
                 'description' => 'Is PHP ('.$phpService.') installed?',
                 'check' => function () use ($phpService) {
-                    return $this->pm->installed($phpService);
+                    return $this->phpEnv->installed($phpService);
                 },
                 'debug' => 'Run `valet install`.',
             ];
