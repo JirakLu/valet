@@ -10,6 +10,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Valet\Drivers\ValetDriver;
+
 use function Valet\info;
 use function Valet\output;
 use function Valet\table;
@@ -404,7 +405,7 @@ if (is_dir(VALET_HOME_PATH)) {
     })->descriptions('Get the URL to the current share tunnel');
 
     /**
-     * Echo or set the name of the currently-selected share tool (either "ngrok" or "expose").
+     * Echo or set the name of the currently-selected share tool (either "ngrok", "expose" or "cloudflared").
      */
     $app->command('share-tool [tool]', function (InputInterface $input, OutputInterface $output, $tool = null) use ($share_tools) {
         if ($tool === null) {
@@ -574,7 +575,6 @@ if (is_dir(VALET_HOME_PATH)) {
             info('Attempting to unlink Valet from bin path...');
             Valet::unlinkFromUsersBin();
             info('Removing sudoers entries...');
-            Brew::removeSudoersEntry();
             Valet::removeSudoersEntry();
 
             return output(Valet::forceUninstallText());

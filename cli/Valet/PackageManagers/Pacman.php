@@ -18,7 +18,7 @@ class Pacman implements PackageManager
      */
     public function installed(string $package): bool
     {
-        return $this->cli->run("pacman -Q $package") !== '';
+        return ! str_starts_with($this->cli->run("pacman -Q $package"), 'error:');
     }
 
     /**
