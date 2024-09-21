@@ -2,7 +2,9 @@
 
 namespace Valet;
 
+use Configuration;
 use JsonException;
+use Site;
 
 class Upgrader
 {
