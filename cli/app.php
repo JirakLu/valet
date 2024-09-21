@@ -33,9 +33,9 @@ if (file_exists(__DIR__.'/../vendor/autoload.php')) {
  */
 Container::setInstance(new Container);
 
-$version = '4.8.0';
+$version = '1.0.0';
 
-$app = new Application('Laravel Valet', $version);
+$app = new Application('Laravel Valet Linux', $version);
 
 $app->setDispatcher($dispatcher = new EventDispatcher);
 
@@ -649,7 +649,7 @@ if (is_dir(VALET_HOME_PATH)) {
         $phpVersion = $phpVersion === 'php' ? \Valet\PhpEnv::LATEST_PHP_VERSION : $phpVersion;
         PhpFpm::useVersion($phpVersion, $force);
     })->descriptions('Change the version of PHP used by Valet', [
-        'phpVersion' => 'The PHP version you want to use; e.g. php@8.2',
+        'phpVersion' => 'The PHP version you want to use; e.g. php@8.2.0',
     ]);
 
     /**

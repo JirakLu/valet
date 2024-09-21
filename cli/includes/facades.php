@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Container\Container;
+use Illuminate\Contracts\Container\BindingResolutionException;
 
 class Facade
 {
@@ -14,6 +15,8 @@ class Facade
 
     /**
      * Call a non-static method on the facade.
+     *
+     * @throws BindingResolutionException
      */
     public static function __callStatic(string $method, array $parameters): mixed
     {

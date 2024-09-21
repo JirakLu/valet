@@ -9,6 +9,7 @@ class PhpEnv
 {
     const LATEST_PHP_VERSION = 'php@8.3.11';
 
+    // TODO: add extensions
     const EXTENSIONS = '';
 
     public function __construct(

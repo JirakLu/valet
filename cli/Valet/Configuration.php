@@ -2,12 +2,16 @@
 
 namespace Valet;
 
+use JsonException;
+
 class Configuration
 {
     public function __construct(public Filesystem $files) {}
 
     /**
      * Install the Valet configuration file.
+     *
+     * @throws JsonException
      */
     public function install(): void
     {
@@ -83,6 +87,8 @@ class Configuration
 
     /**
      * Ensure the base initial configuration has been installed.
+     *
+     * @throws JsonException
      */
     public function ensureBaseConfiguration(): void
     {
@@ -109,6 +115,8 @@ class Configuration
 
     /**
      * Add the given path to the configuration.
+     *
+     * @throws JsonException
      */
     public function addPath(string $path, bool $prepend = false): void
     {
@@ -121,6 +129,8 @@ class Configuration
 
     /**
      * Prepend the given path to the configuration.
+     *
+     * @throws JsonException
      */
     public function prependPath(string $path): void
     {
@@ -129,6 +139,8 @@ class Configuration
 
     /**
      * Remove the given path from the configuration.
+     *
+     * @throws JsonException
      */
     public function removePath(string $path): void
     {
@@ -147,6 +159,8 @@ class Configuration
 
     /**
      * Prune all non-existent paths from the configuration.
+     *
+     * @throws JsonException
      */
     public function prune(): void
     {
@@ -163,6 +177,8 @@ class Configuration
 
     /**
      * Read the configuration file as JSON.
+     *
+     * @throws JsonException
      */
     public function read(): array
     {
@@ -175,6 +191,8 @@ class Configuration
 
     /**
      * Update a specific key in the configuration file.
+     *
+     * @throws JsonException
      */
     public function updateKey(string $key, mixed $value): array
     {

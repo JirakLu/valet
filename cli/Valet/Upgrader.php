@@ -2,6 +2,8 @@
 
 namespace Valet;
 
+use JsonException;
+
 class Upgrader
 {
     public function __construct(public Filesystem $files) {}
@@ -23,21 +25,19 @@ class Upgrader
     public function pruneMissingDirectories(): void
     {
         try {
-            // TODO: fix this
-            //            Configuration::prune();
-        } catch (\JsonException $e) {
+            Configuration::prune();
+        } catch (JsonException $e) {
             warning('Invalid configuration file at '.Configuration::path().'.');
             exit;
         }
     }
 
     /**
-     * Remove all broken symbolic links in the Valet config Sites diretory.
+     * Remove all broken symbolic links in the Valet config Sites directory.
      */
     public function pruneSymbolicLinks(): void
     {
-        // TODO: fix this
-        //        Site::pruneLinks();
+        Site::pruneLinks();
     }
 
     /**
