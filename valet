@@ -109,7 +109,7 @@ then
             PORT=80
         fi
 
-        sudo -u "$USER" expose share "$HOST.$TLD:$PORT" $PARAMS
+        sudo -u "$USER" "$HOME/.config/composer/vendor/bin/expose" share "$HOST.$TLD:$PORT" $PARAMS
 
         exit
 
