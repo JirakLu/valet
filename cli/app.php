@@ -502,7 +502,7 @@ if (is_dir(VALET_HOME_PATH)) {
                 return info('PHP has been restarted.');
         }
 
-        // Handle restarting specific PHP version (e.g. `valet restart php@8.2`)
+        // Handle restarting specific PHP version (e.g. `valet restart php@8.2.1`)
         if (str_contains($service, 'php')) {
             PhpFpm::restart($normalized = PhpFpm::normalizePhpVersion($service));
 
