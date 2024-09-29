@@ -9,7 +9,7 @@ class PhpEnv
 {
     const LATEST_PHP_VERSION = 'php@8.3.11';
 
-    const EXTENSIONS = 'imagick=3.7.0 mongodb=1.20.0 redis=6.0.2 sodium=2.0.23 pdo_sqlsrv=5.12.0 sqlsrv=5.12.0';
+    const EXTENSIONS = 'imagick=3.7.0 mongodb=1.20.0 redis=6.0.2 pdo_sqlsrv=5.12.0 sqlsrv=5.12.0';
 
     public function __construct(
         public CommandLine $cli,
@@ -79,7 +79,7 @@ class PhpEnv
         info("Installing {$version}... (this might take a while)");
 
         $this->cli->runAsUser('PHP_BUILD_INSTALL_EXTENSION="'.self::EXTENSIONS.'"'.' '.$this->phpEnvPath().' '.'install -i development '.static::getRawPhpVersion($version), function ($exitCode, $errorOutput) use ($version) {
-            $this->runPhpEnv('uninstall '.static::getRawPhpVersion($version));
+            $this->runPhpEnv('uninstall -f '.static::getRawPhpVersion($version));
             output($errorOutput);
 
             throw new DomainException('PHP version ['.$version.'] could not be installed.');
