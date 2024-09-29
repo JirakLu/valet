@@ -221,6 +221,6 @@ class PhpEnv
      */
     public function phpEnvPath(): string
     {
-        return $_SERVER['HOME'].'/.phpenv';
+        return $_SERVER['HOME'].'/.phpenv/bin/phpenv';
     }
 }
