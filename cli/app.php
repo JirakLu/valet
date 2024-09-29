@@ -10,7 +10,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Valet\Drivers\ValetDriver;
-
 use function Valet\info;
 use function Valet\output;
 use function Valet\table;
@@ -603,7 +602,6 @@ if (is_dir(VALET_HOME_PATH)) {
      * Install the sudoers.d entries so password is no longer required.
      */
     $app->command('trust [--off]', function (OutputInterface $output, $off) {
-        // TODO: add more sudoers entries for SM and PHPENV
         if ($off) {
             Valet::removeSudoersEntry();
 

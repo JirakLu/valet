@@ -9,8 +9,7 @@ class PhpEnv
 {
     const LATEST_PHP_VERSION = 'php@8.3.11';
 
-    // TODO: add extensions
-    const EXTENSIONS = '';
+    const EXTENSIONS = 'imagick=3.7.0 mongodb=1.20.0 pdo_pgqsl=1.0.2 redis=6.0.2 sodium=2.0.23 pdo_sqlsrv=5.12.0 sqlsrv=5.12.0';
 
     public function __construct(
         public CommandLine $cli,
@@ -79,6 +78,7 @@ class PhpEnv
     {
         info("Installing {$version}... (this might take a while)");
 
+        $this->cli->runAsUser('export PHP_BUILD_INSTALL_EXTENSION="'.static::EXTENSIONS.'"');
         $this->runPhpEnv('install -i development '.static::getRawPhpVersion($version), function ($exitCode, $errorOutput) use ($version) {
             $this->runPhpEnv('uninstall '.static::getRawPhpVersion($version));
             output($errorOutput);
