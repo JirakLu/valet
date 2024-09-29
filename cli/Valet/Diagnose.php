@@ -19,7 +19,7 @@ class Diagnose
         $commands = [
             'valet --version',
             'cat ~/.config/valet/config.json',
-            'cat ~/.composer/composer.json',
+            'cat ~/.config/composer/composer.json',
             'composer global diagnose',
             'composer global outdated',
             'sudo ls -al /etc/sudoers.d/',
@@ -46,9 +46,10 @@ class Diagnose
             $commands[] = "$phpPath -v";
             $commands[] = "$phpPath --ini";
 
-            $phpFpmPath = str_replace('/php', '/php-fpm', $phpPath);
-            $commands[] = "$phpFpmPath -v";
             // TODO: add fpmConfPath to PhpFpm
+            $phpFpmPath = str_replace('/php', '/php-fpm', $phpPath);
+            $phpFpmPath = preg_replace('/\/bin\//', '/sbin/', $phpFpmPath, 1);
+            $commands[] = "$phpFpmPath -v";
 
             $fpmConfPath = $_SERVER['HOME'].'/.phpenv/versions/'.PhpEnv::getRawPhpVersion($phpService).'/etc/php-fpm.conf';
             $commands[] = "sudo $phpFpmPath -y $fpmConfPath --test";
