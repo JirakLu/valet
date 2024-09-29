@@ -25,12 +25,11 @@ fi
 # checking and pulling again by reading the exported env var
 if [[ "$PHP_EXECUTABLE" = "" ]]
 then
-    PHP="$(php $DIR/find-usable-php.php)"
+    PHP="which php"
 
     # Validate output before running it on the CLI
     if [[ ! -f "$PHP" ]]; then
         echo "Error finding executable PHP. Quitting for safety."
-        echo "Provided output from find-usable-php.php:"
         echo $PHP
         exit
     fi

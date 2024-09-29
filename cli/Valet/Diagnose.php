@@ -8,40 +8,54 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 
 class Diagnose
 {
-    public $commands = [
-        'valet --version',
-        'cat ~/.config/valet/config.json',
-        'cat ~/.composer/composer.json',
-        'composer global diagnose',
-        'composer global outdated',
-        'sudo ls -al /etc/sudoers.d/',
-        'php -v',
-        'which -a php',
-        'php --ini',
-        'nginx -v',
-        'curl --version',
-        'php --ri curl',
-        '/bin/ngrok version',
-        'openssl version -a',
-        'openssl ciphers',
-        'sudo nginx -t',
-        // TODO: add some checks for phpenv & phpfpm
-        //        'which -a php-fpm',
-        //        'php-fpm -v',
-        //        'sudo php-fpm -y '.PHP_SYSCONFDIR.'/php-fpm.conf --test',
-        'ls -aln /etc/resolv.conf',
-        'cat /etc/resolv.conf',
-        'ip addr show lo',
-        'sh -c \'echo "------\n/etc/nginx/valet/valet.conf\n---\n"; cat /etc/nginx/valet/valet.conf | grep -n "# valet loopback"; echo "\n------\n"\'',
-        'sh -c \'for file in ~/.config/valet/dnsmasq.d/*; do echo "------\n~/.config/valet/dnsmasq.d/$(basename $file)\n---\n"; cat $file; echo "\n------\n"; done\'',
-        'sh -c \'for file in ~/.config/valet/Nginx/*; do echo "------\n~/.config/valet/Nginx/$(basename $file)\n---\n"; cat $file | grep -n "# valet loopback"; echo "\n------\n"; done\'',
-    ];
+    public string $print;
 
-    public $print;
+    public ?ProgressBar $progressBar;
 
-    public $progressBar;
+    public function __construct(public PhpFpm $phpFpm, public PhpEnv $phpEnv, CommandLine $cli, public Filesystem $files) {}
 
-    public function __construct(public CommandLine $cli, public Filesystem $files) {}
+    public function commands(): array
+    {
+        $commands = [
+            'valet --version',
+            'cat ~/.config/valet/config.json',
+            'cat ~/.composer/composer.json',
+            'composer global diagnose',
+            'composer global outdated',
+            'sudo ls -al /etc/sudoers.d/',
+            'php -v',
+            'which -a php',
+            'php --ini',
+            'nginx -v',
+            'curl --version',
+            'php --ri curl',
+            '/bin/ngrok version',
+            'openssl version -a',
+            'openssl ciphers',
+            'sudo nginx -t',
+            'ls -aln /etc/resolv.conf',
+            'cat /etc/resolv.conf',
+            'ip addr show lo',
+            'sh -c \'echo "------\n/etc/nginx/valet/valet.conf\n---\n"; cat /etc/nginx/valet/valet.conf | grep -n "# valet loopback"; echo "\n------\n"\'',
+            'sh -c \'for file in ~/.config/valet/dnsmasq.d/*; do echo "------\n~/.config/valet/dnsmasq.d/$(basename $file)\n---\n"; cat $file; echo "\n------\n"; done\'',
+            'sh -c \'for file in ~/.config/valet/Nginx/*; do echo "------\n~/.config/valet/Nginx/$(basename $file)\n---\n"; cat $file | grep -n "# valet loopback"; echo "\n------\n"; done\'',
+        ];
+
+        foreach ($this->phpFpm->utilizedPhpVersions() as $phpService) {
+            $phpPath = $this->phpEnv->getPhpExecutablePath($phpService);
+            $commands[] = "$phpPath -v";
+            $commands[] = "$phpPath --ini";
+
+            $phpFpmPath = str_replace('/php', '/php-fpm', $phpPath);
+            $commands[] = "$phpFpmPath -v";
+            // TODO: add fpmConfPath to PhpFpm
+
+            $fpmConfPath = $_SERVER['HOME'].'/.phpenv/versions/'.PhpEnv::getRawPhpVersion($phpService).'/etc/php-fpm.conf';
+            $commands[] = "sudo $phpFpmPath -y $fpmConfPath --test";
+        }
+
+        return $commands;
+    }
 
     /**
      * Run diagnostics.
@@ -52,7 +66,7 @@ class Diagnose
 
         $this->beforeRun();
 
-        $results = collect($this->commands)->map(function ($command) {
+        $results = collect($this->commands())->map(function ($command) {
             $this->beforeCommand($command);
 
             $output = $this->runCommand($command);
@@ -70,7 +84,6 @@ class Diagnose
 
         $this->files->put('valet_diagnostics.txt', $output);
 
-        // TODO: check this
         $this->cli->run('xclip -sel clip < valet_diagnostics.txt');
 
         $this->files->unlink('valet_diagnostics.txt');
@@ -84,7 +97,7 @@ class Diagnose
             return;
         }
 
-        $this->progressBar = new ProgressBar(new ConsoleOutput, count($this->commands));
+        $this->progressBar = new ProgressBar(new ConsoleOutput, count($this->commands()));
 
         $this->progressBar->start();
     }
