@@ -12,7 +12,7 @@ class Diagnose
 
     public ?ProgressBar $progressBar;
 
-    public function __construct(public PhpFpm $phpFpm, public PhpEnv $phpEnv, CommandLine $cli, public Filesystem $files) {}
+    public function __construct(public PhpFpm $phpFpm, public PhpEnv $phpEnv, public CommandLine $cli, public Filesystem $files) {}
 
     public function commands(): array
     {
