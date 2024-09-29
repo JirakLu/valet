@@ -48,7 +48,6 @@ class PhpFpm
      */
     public function uninstall(): void
     {
-        // TODO: rewrite this
         $this->phpEnv->uninstallAllPhpVersions();
         $this->cli->run('rm -rf /var/log/php-fpm.log');
     }

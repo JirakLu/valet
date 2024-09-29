@@ -41,7 +41,6 @@ class Status
      */
     public function checks(): array
     {
-        $phpVersion = $this->phpEnv->phpVersion();
         $checks = [
             [
                 'description' => 'Is Valet fully installed?',
@@ -100,6 +99,13 @@ class Status
                 'debug' => 'Run `valet restart`.',
             ],
             [
+                'description' => 'Is phpenv installed?',
+                'check' => function () {
+                    return $this->files->exists($_SERVER['HOME'].'/.phpenv');
+                },
+                'debug' => 'Run `valet install`.',
+            ],
+            [
                 'description' => 'Is PHP installed?',
                 'check' => function () {
                     return $this->phpEnv->hasInstalledPhp();
@@ -140,8 +146,6 @@ class Status
             },
             'debug' => 'Run `valet install`.',
         ];
-
-        // TODO: add checks for phpenv
 
         return $checks;
     }
