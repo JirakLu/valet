@@ -78,8 +78,7 @@ class PhpEnv
     {
         info("Installing {$version}... (this might take a while)");
 
-        $this->cli->runAsUser('export PHP_BUILD_INSTALL_EXTENSION="'.static::EXTENSIONS.'"');
-        $this->runPhpEnv('install -i development '.static::getRawPhpVersion($version), function ($exitCode, $errorOutput) use ($version) {
+        $this->cli->runAsUser('PHP_BUILD_INSTALL_EXTENSION="'.self::EXTENSIONS.'"'.' '.$this->phpEnvPath().' '.'install -i development '.static::getRawPhpVersion($version), function ($exitCode, $errorOutput) use ($version) {
             $this->runPhpEnv('uninstall '.static::getRawPhpVersion($version));
             output($errorOutput);
 
@@ -206,7 +205,7 @@ class PhpEnv
      */
     public function runPhpEnv(string $command, ?callable $onError = null): string
     {
-        return $this->cli->runAsUser($_SERVER['HOME'].'/.phpenv/bin/phpenv '.$command, $onError);
+        return $this->cli->runAsUser($this->phpEnvPath().' '.$command, $onError);
     }
 
     /**
@@ -215,5 +214,13 @@ class PhpEnv
     public function isUsingLatestPhp(): bool
     {
         return $this->phpVersion() === PhpEnv::LATEST_PHP_VERSION;
+    }
+
+    /**
+     * PhpEnv path.
+     */
+    public function phpEnvPath(): string
+    {
+        return $_SERVER['HOME'].'/.phpenv';
     }
 }
